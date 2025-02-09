@@ -6,7 +6,9 @@ function Navbar({ profile }) {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container">
-        <a className="navbar-brand" href="#">Aircraft: {profile.name}</a>
+      <Link className="navbar-brand" to="/">
+          {profile ? `Aircraft: ${profile.name}` : "Aircraft"}
+        </Link>
         
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span className="navbar-toggler-icon"></span>
