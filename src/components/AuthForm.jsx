@@ -17,15 +17,24 @@ function AuthForm({ setProfile }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (mode === "create") {
-      const res = await axios.post("http://localhost:5000/api/create-profile", formData);
-      setProfile(res.data);
-    } else if (mode === "login") {
-      const res = await axios.post("http://localhost:5000/api/login", {
-        name: formData.name,
-        password: formData.password,
-      });
-      setProfile(res.data);
+    try {
+      let res;
+      if (mode === "create") {
+        res = await axios.post("http://localhost:5000/api/create-profile", formData, {
+          withCredentials: true,
+        });
+      } else if (mode === "login") {
+        res = await axios.post("http://localhost:5000/api/login", {
+          name: formData.name,
+          password: formData.password,
+        }, { withCredentials: true });
+      }
+      
+      console.log("Response:", res.data);
+      // Set test profile for debugging
+      setProfile({ name: "AF6", aircraftId: 1 });
+    } catch (error) {
+      console.error("Error:", error.response?.data || error);
     }
   };
 

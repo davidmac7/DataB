@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
 function Navbar({ profile }) {
@@ -17,7 +18,7 @@ function Navbar({ profile }) {
               <a className="nav-link" href="#">Discover</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">Post</a>
+              <Link className="nav-link" to="/post">Post</Link> {/* ✅ This will navigate to PostForm */}
             </li>
             <li className="nav-item">
               <div className="input-group">
@@ -32,6 +33,7 @@ function Navbar({ profile }) {
             </li>
           </ul>
         </div>
+        
       </div>
     </nav>
   );
