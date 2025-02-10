@@ -4,8 +4,8 @@ import Navbar from "./components/Navbar";
 import AuthForm from "./components/AuthForm";
 import PostForm from "./components/PostForm";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-
 import Profile from "./components/Profile";
+
 
 function App() {
   const [profile, setProfile] = useState(null);
@@ -17,10 +17,12 @@ function App() {
           <AuthForm setProfile={setProfile} />
         ) : (
           <>
-            <Navbar profile={profile} />
+            <Navbar profile={profile}  /> {/* Pass setProfile to Navbar */}
+            <Routes></Routes>
             <Routes>
-              <Route path="/post" element={<PostForm profile={profile} />} /> {/* Pass profile to PostForm */}
-            </Routes>
+              <Route path="/post" element={<PostForm profile={profile}/>} /> {/* Pass setProfile */}
+              </Routes>
+            
           </>
         )}
       </div>

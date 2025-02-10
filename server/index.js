@@ -101,7 +101,7 @@ app.use("/uploads", express.static("uploads")); // Serve images from uploads fol
 
 // API route to handle form submission (Post component)
 app.post("/api/post-component", upload.single("image"), async (req, res) => {
-  const { name, partNumber, serialNumber, comment, status } = req.body;
+  const { name, partNumber, serialNumber, comment, status, category } = req.body;
   const imagePath = req.file ? `/uploads/${req.file.filename}` : null; // Get the uploaded image path
 
   const aircraftProfileId = req.session.aircraftId; // Get the aircraft profile ID from session
@@ -112,11 +112,11 @@ app.post("/api/post-component", upload.single("image"), async (req, res) => {
 
   try {
     const query = `
-      INSERT INTO components (name, part_number, serial_number, comment, status, image_path, aircraft_profile_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO components (name, part_number, serial_number, comment, status, category, image_path, aircraft_profile_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
     `;
-    const values = [name, partNumber, serialNumber, comment, status, imagePath, aircraftProfileId];
+    const values = [name, partNumber, serialNumber, comment, status, category, imagePath, aircraftProfileId];
 
     const result = await pool.query(query, values);
     console.log("Post submitted:", result.rows[0]); // Log the submitted post

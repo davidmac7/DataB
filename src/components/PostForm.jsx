@@ -44,9 +44,10 @@ function PostForm({ profile }) {
     formDataToSend.append("serialNumber", formData.serialNumber);
     formDataToSend.append("comment", formData.comment);
     formDataToSend.append("status", formData.status);
+    formDataToSend.append("category", formData.category); // Send category to database
     formDataToSend.append("image", formData.image); // Attach image file
     formDataToSend.append("aircraftId", profile.aircraftId);
-    
+
     try {
       // Send form data to the backend (API route for submitting post)
       const res = await axios.post("http://localhost:5000/api/post-component", formDataToSend, {
@@ -63,6 +64,7 @@ function PostForm({ profile }) {
         serialNumber: "",
         comment: "",
         status: "functioning",
+        category: "X",
         image: null,
       });
     } catch (error) {
@@ -133,7 +135,21 @@ function PostForm({ profile }) {
             <option value="non-functioning">Non-functioning</option>
           </select>
         </div>
-
+ {/* Category Dropdown */}
+ <div className="form-group mb-3">
+          <label>Category</label>
+          <select
+            name="category"
+            className="form-control"
+            value={formData.category}
+            onChange={handleChange}
+            required
+          >
+            <option value="X">X</option>
+            <option value="R">R</option>
+            <option value="A">A</option>
+          </select>
+        </div>
         <div className="form-group mb-3">
           <input
             type="file"
