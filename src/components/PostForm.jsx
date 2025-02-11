@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
 function PostForm({ profile }) {
+
   const [formData, setFormData] = useState({
     name: "",
     partNumber: "",
     serialNumber: "",
     comment: "",
     status: "functioning", // default status
+    category: "X", // ✅ Ensures X is the default value
     image: null,
   });
 
@@ -29,7 +31,10 @@ function PostForm({ profile }) {
       image: file,
     }));
   };
-
+  
+  useEffect(() => {
+    console.log("Received Profile in PostForm:", profile);
+  }, [profile]);
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();

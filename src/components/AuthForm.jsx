@@ -28,11 +28,14 @@ function AuthForm({ setProfile }) {
           name: formData.name,
           password: formData.password,
         }, { withCredentials: true });
+        console.log("Response from backend:", res.data); // Debugging step
       }
       
-      console.log("Response:", res.data);
-      // Set test profile for debugging
-      setProfile({ name: "AF6", aircraftId: 1 });
+      if (res.data && res.data.aircraftId) {
+        setProfile(res.data); // Ensure aircraftId exists in profile
+      } else {
+        console.error("Error: Aircraft profile not received from backend");
+      }
     } catch (error) {
       console.error("Error:", error.response?.data || error);
     }

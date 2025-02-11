@@ -4,11 +4,13 @@ import Navbar from "./components/Navbar";
 import AuthForm from "./components/AuthForm";
 import PostForm from "./components/PostForm";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import Profile from "./components/Profile";
+
 
 
 function App() {
   const [profile, setProfile] = useState(null);
+  console.log("Current Profile:", profile); // Debugging to check profile state
+
 
   return (
     <Router>

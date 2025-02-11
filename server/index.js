@@ -60,23 +60,38 @@ app.post("/api/create-profile", async (req, res) => {
 // Login
 app.post("/api/login", async (req, res) => {
   const { name, password } = req.body;
-  const user = await pool.query("SELECT * FROM aircraft_profiles WHERE name = $1", [name]);
 
-  if (user.rows.length === 0) {
-    return res.status(401).json({ error: "User not found" });
+  try {
+      // Fetch user details including password for authentication
+      const user = await pool.query("SELECT id, name, password FROM aircraft_profiles WHERE name = $1", [name]);
+
+      if (user.rows.length === 0) {
+          return res.status(401).json({ error: "User not found" });
+      }
+
+      // Compare hashed password
+      const validPassword = bcrypt.compareSync(password, user.rows[0].password);
+      if (!validPassword) {
+          return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Set aircraft profile ID in session
+      req.session.aircraftId = user.rows[0].id;
+
+      // Return the aircraft profile to the frontend
+      const profile = { 
+        name: user.rows[0].name,
+            aircraftId: user.rows[0].id // Ensure 'id' is sent properly
+      };
+
+      console.log("Backend Profile Response:", profile); // Debugging log
+      res.json(profile);
+  } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Internal server error" });
   }
-
-  const validPassword = bcrypt.compareSync(password, user.rows[0].password);
-  if (!validPassword) {
-    return res.status(401).json({ error: "Invalid credentials" });
-  }
-
-
-  // Set aircraft profile ID in session
-  req.session.aircraftId = user.rows[0].id;
-
-  res.json({ id: user.rows[0].id, name: user.rows[0].name });
 });
+
 
 // Ensure 'uploads' and 'documents' folders exist
 if (!fs.existsSync("uploads")) {
@@ -111,6 +126,8 @@ app.post("/api/post-component", upload.single("image"), async (req, res) => {
   }
 
   try {
+    console.log("Received Data:", req.body); // Debugging
+
     const query = `
       INSERT INTO components (name, part_number, serial_number, comment, status, category, image_path, aircraft_profile_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
