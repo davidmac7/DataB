@@ -7,7 +7,7 @@ function X({ profile }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    
+
 
 
     const fetchComponents = async () => {
@@ -31,17 +31,25 @@ function X({ profile }) {
 
   return (
     <div>
-      <h1>Components in Category X</h1>
+      <h2>Components in Category X</h2>
       {components.length > 0 ? (
-        <div className="components-list">
+        <div className="grid-container">
           {components.map((component, index) => (
-            <div key={index} className="component-item">
+            <div key={index} className="grid-item">
               <h3>Name: {component.name}</h3>
               <p>Part Number: {component.part_number}</p>
               <p>Serial Number: {component.serial_number}</p>
               <p>Comment: {component.comment}</p>
               <p>Status: {component.status}</p>
-               {component.image_url && <img src={component.image_url} alt="Component" width="200" />}
+              {component.image_url && (
+                <img
+                  src={component.image_url}
+                  alt="Component"
+                  width="200"
+                  height="200"
+                />
+              )}
+
             </div>
           ))}
         </div>

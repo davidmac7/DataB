@@ -7,6 +7,7 @@ import X from "./components/X";
 import R from "./components/R";
 import A from "./components/A";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import "./App.css"; // Import your custom CSS
 
 
 

@@ -1,38 +1,46 @@
-.App {
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* Exactly 5 columns per row */
+  gap: 20px;
+  padding: 20px;
+}
+
+.grid-item {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
   text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out; /* Smooth scaling effect */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.grid-item:hover {
+  transform: scale(1.05); /* Slightly enlarges the grid item */
+  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15); /* Enhances shadow on hover */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+.component-img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Ensure responsiveness on smaller screens */
+@media (max-width: 1024px) {
+  .grid-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 items per row on medium screens */
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 items per row on smaller screens */
   }
-  to {
-    transform: rotate(360deg);
+}
+
+@media (max-width: 480px) {
+  .grid-container {
+    grid-template-columns: repeat(1, 1fr); /* 1 item per row on mobile */
   }
 }
