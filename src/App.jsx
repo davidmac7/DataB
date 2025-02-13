@@ -3,13 +3,16 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import AuthForm from "./components/AuthForm";
 import PostForm from "./components/PostForm";
+import X from "./components/X";
+import R from "./components/R";
+import A from "./components/A";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 
 
 function App() {
   const [profile, setProfile] = useState(null);
-  console.log("Current Profile:", profile); // Debugging to check profile state
+  // console.log("Current Profile:", profile); // Debugging to check profile state
 
 
   return (
@@ -19,12 +22,15 @@ function App() {
           <AuthForm setProfile={setProfile} />
         ) : (
           <>
-            <Navbar profile={profile}  /> {/* Pass setProfile to Navbar */}
-            <Routes></Routes>
+            <Navbar profile={profile} /> {/* Pass setProfile to Navbar */}
+
             <Routes>
-              <Route path="/post" element={<PostForm profile={profile}/>} /> {/* Pass setProfile */}
-              </Routes>
-            
+              <Route path="/post" element={<PostForm profile={profile} />} />
+              <Route path="/discover/X" element={<X profile={profile} />} />
+              <Route path="/discover/R" element={<R profile={profile} />} />
+              <Route path="/discover/A" element={<A profile={profile} />} />
+            </Routes>
+
           </>
         )}
       </div>

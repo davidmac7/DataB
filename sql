@@ -32,3 +32,8 @@ CREATE TABLE items (
     SELECT column_name, data_type, character_maximum_length
 FROM information_schema.columns
 WHERE table_name = 'components';
+
+ALTER TABLE components ALTER COLUMN status TYPE VARCHAR(20);
+
+ALTER TABLE components ALTER COLUMN category TYPE VARCHAR(5);
+

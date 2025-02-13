@@ -8,20 +8,35 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import session from "express-session"; // Import express-session
+import cookieSession from 'cookie-session';
+
 
 dotenv.config();
 
 const app = express();
 
-// Set up session middleware
+// ✅ Initialize the PostgreSQL pool BEFORE using it
+const pool = new pg.Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+ // Pass 'session' to 'connect-pg-simple'
+
 app.use(
-  session({
-    secret: "4007", // Replace with a secure secret
+  cookieSession({
+    name: 'session',
+    secret: '4006',
+    maxAge: 24 * 60 * 60 * 1000,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }, // Set to `true` if using HTTPS
+    saveUninitialized: false,
+    cookie: { secure: false, httpOnly: true },
   })
 );
+
 
 // Define the allowed origins and enable credentials
 const corsOptions = {
@@ -30,16 +45,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
 app.use(bodyParser.json());
-
-const pool = new pg.Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
 
 // Create Profile
 app.post("/api/create-profile", async (req, res) => {
@@ -143,5 +149,40 @@ app.post("/api/post-component", upload.single("image"), async (req, res) => {
     res.status(500).send("Error submitting post");
   }
 });
+
+// API to get all components in category X for the logged-in aircraft profile
+app.get("/api/get-components/X", async (req, res) => {
+  // console.log("Session Data:", req.session); // Log session to check if aircraftId exists
+  const aircraftProfileId = req.session.aircraftId; // Get aircraft profile ID from session
+
+  if (!aircraftProfileId) {
+    return res.status(400).json({ error: "No aircraft profile found in session" });
+  }
+
+  try {
+    const query = `
+      SELECT * FROM components 
+      WHERE category = 'X' AND aircraft_profile_id = $1
+    `;
+    const values = [aircraftProfileId];
+
+    const result = await pool.query(query, values);
+
+    // Append full URL for images
+    const components = result.rows.map((component) => ({
+      ...component,
+      image_url: component.image_path ? `http://localhost:5000${component.image_path}` : null,
+    }));
+
+    res.json(components); // Return all components of category X for the logged-in aircraft
+
+  } catch (error) {
+    console.error("Error fetching components:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
 
 app.listen(5000, () => console.log("Server running on port 5000"));

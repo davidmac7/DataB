@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
 function Navbar({ profile }) {
+  
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container">
@@ -16,9 +17,24 @@ function Navbar({ profile }) {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <a className="nav-link" href="#">Discover</a>
+          <li className="nav-item dropdown">
+              <Link 
+                className="nav-link dropdown-toggle" 
+                to="#" 
+                id="discoverDropdown" 
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Discover
+              </Link>
+              <ul className="dropdown-menu" aria-labelledby="discoverDropdown">
+                <li><Link className="dropdown-item" to="/discover/X">X</Link></li>
+                <li><Link className="dropdown-item" to="/discover/R">R</Link></li>
+                <li><Link className="dropdown-item" to="/discover/A">A</Link></li>
+              </ul>
             </li>
+
             <li className="nav-item">
               <Link className="nav-link" to="/post">Post</Link> {/* ✅ This will navigate to PostForm */}
             </li>
@@ -29,9 +45,9 @@ function Navbar({ profile }) {
               </div>
             </li>
             <li className="nav-item">
-              <button className="btn btn-danger ms-3" onClick={() => window.location.reload()}>
-                Logout
-              </button>
+            <Link className="btn btn-danger ms-3" to="/logout">
+            Logout
+            </Link>
             </li>
           </ul>
         </div>
