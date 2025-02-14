@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
 function Navbar({ profile }) {
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -40,8 +50,16 @@ function Navbar({ profile }) {
             </li>
             <li className="nav-item">
               <div className="input-group">
-                <input type="text" className="form-control" placeholder="Search" />
-                <button className="btn btn-outline-light">🔍</button>
+                <input
+                  type="text"
+                  placeholder="Search by Name or Part Number"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
+                <button onClick={handleSearch} className="search-btn">
+                  🔍
+                </button>
               </div>
             </li>
             <li className="nav-item">

@@ -39,9 +39,14 @@ function SearchResults({ profile }) {
             <div key={index} className="grid-item">
               <h3>{item.name}</h3>
               <p>Part Number: {item.part_number}</p>
-              {item.image_url && (
-                <img src={item.image_url} alt="Component" className="component-img" />
+              <p>Serial Number: {item.serial_number}</p>
+              {item.image_url ? (
+                <img src={item.image_url} alt="Component" width="200" height="200" />
+              ) : (
+                <p>No Image Available</p>
               )}
+
+
             </div>
           ))
         ) : (

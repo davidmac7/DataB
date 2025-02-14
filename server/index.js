@@ -246,4 +246,34 @@ app.get("/api/get-components/A", async (req, res) => {
   }
 });
 
+app.use("/uploads", express.static("uploads"));
+
+app.get("/api/search", async (req, res) => {
+  const { query, aircraftId } = req.query;
+  if (!query || !aircraftId) return res.status(400).json({ error: "Missing parameters" });
+
+  try {
+    const result = await pool.query(
+      `SELECT * 
+       FROM components 
+       WHERE aircraft_profile_id = $1 
+       AND (LOWER(name) LIKE LOWER($2) OR LOWER(part_number) LIKE LOWER($2))`,
+      [aircraftId, `%${query}%`]
+      
+    );
+
+    // Append full URL for images
+    const results = result.rows.map((item) => ({
+      ...item,
+      image_url: item.image_path ? `http://localhost:5000${item.image_path}` : null,
+    }));
+    console.log(results);
+    res.json(results);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 app.listen(5000, () => console.log("Server running on port 5000"));

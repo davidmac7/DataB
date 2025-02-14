@@ -6,6 +6,7 @@ import PostForm from "./components/PostForm";
 import X from "./components/X";
 import R from "./components/R";
 import A from "./components/A";
+import SearchResults from "./components/SearchResults";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "./App.css"; // Import your custom CSS
 
@@ -30,6 +31,7 @@ function App() {
               <Route path="/discover/X" element={<X profile={profile} />} />
               <Route path="/discover/R" element={<R profile={profile} />} />
               <Route path="/discover/A" element={<A profile={profile} />} />
+              <Route path="/search" element={<SearchResults profile={profile} />} />
             </Routes>
 
           </>
