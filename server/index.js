@@ -206,7 +206,7 @@ app.get("/api/get-components/R", async (req, res) => {
       image_url: component.image_path ? `http://localhost:5000${component.image_path}` : null,
     }));
 
-    res.json(components); // Return all components of category X for the logged-in aircraft
+    res.json(components); // Return all components of category R for the logged-in aircraft
 
   } catch (error) {
     console.error("Error fetching components:", error);
@@ -214,5 +214,36 @@ app.get("/api/get-components/R", async (req, res) => {
   }
 });
 
+// API to get all components in category A for the logged-in aircraft profile
+app.get("/api/get-components/A", async (req, res) => {
+  // console.log("Session Data:", req.session); // Log session to check if aircraftId exists
+  const aircraftProfileId = req.session.aircraftId; // Get aircraft profile ID from session
+
+  if (!aircraftProfileId) {
+    return res.status(400).json({ error: "No aircraft profile found in session" });
+  }
+
+  try {
+    const query = `
+      SELECT * FROM components 
+      WHERE category = 'A' AND aircraft_profile_id = $1
+    `;
+    const values = [aircraftProfileId];
+
+    const result = await pool.query(query, values);
+
+    // Append full URL for images
+    const components = result.rows.map((component) => ({
+      ...component,
+      image_url: component.image_path ? `http://localhost:5000${component.image_path}` : null,
+    }));
+
+    res.json(components); // Return all components of category A for the logged-in aircraft
+
+  } catch (error) {
+    console.error("Error fetching components:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 app.listen(5000, () => console.log("Server running on port 5000"));

@@ -31,11 +31,11 @@ function R({ profile }) {
 
   return (
     <div>
-      <h1>Components in Category R</h1>
+      <h2>Components in Category R</h2>
       {components.length > 0 ? (
-        <div className="components-list">
+        <div className="grid-container">
           {components.map((component, index) => (
-            <div key={index} className="component-item">
+            <div key={index} className="grid-item">
               <h3>Name: {component.name}</h3>
               <p>Part Number: {component.part_number}</p>
               <p>Serial Number: {component.serial_number}</p>
