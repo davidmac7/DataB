@@ -49,6 +49,9 @@ function Navbar({ profile }) {
               <Link className="nav-link" to="/post">Post</Link> {/* ✅ This will navigate to PostForm */}
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/post-defect">Post Defect</Link> 
+            </li>
+            <li className="nav-item">
               <div className="input-group">
                 <input
                   type="text"

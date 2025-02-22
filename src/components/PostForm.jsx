@@ -12,6 +12,7 @@ function PostForm({ profile }) {
     status: "functioning", // default status
     category: "X", // ✅ Ensures X is the default value
     image: null,
+    doc: null, // ✅ Added document field
   });
 
   // Handle changes in form input fields
@@ -32,6 +33,19 @@ function PostForm({ profile }) {
     }));
   };
   
+   // ✅ Handle document file upload (only .doc, .docx, .pdf)
+   const handleDocChange = (e) => {
+    const file = e.target.files[0];
+    if (file && !["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
+      alert("Only .doc, .docx, and .pdf files are allowed.");
+      return;
+    }
+    setFormData((prevData) => ({
+      ...prevData,
+      doc: file,
+    }));
+  };
+
   useEffect(() => {
     console.log("Received Profile in PostForm:", profile);
   }, [profile]);
@@ -51,6 +65,7 @@ function PostForm({ profile }) {
     formDataToSend.append("status", formData.status);
     formDataToSend.append("category", formData.category); // Send category to database
     formDataToSend.append("image", formData.image); // Attach image file
+    formDataToSend.append("doc", formData.doc); // ✅ Attach document file
     formDataToSend.append("aircraftId", profile.aircraftId);
 
     try {
@@ -71,6 +86,7 @@ function PostForm({ profile }) {
         status: "functioning",
         category: "X",
         image: null,
+        doc: null, // ✅ Clear document field
       });
     } catch (error) {
       console.error("Error submitting post:", error.response?.data || error.message);
@@ -129,6 +145,7 @@ function PostForm({ profile }) {
         </div>
 
         <div className="form-group mb-3">
+        <label>Status</label>
           <select
             name="status"
             className="form-control"
@@ -156,6 +173,7 @@ function PostForm({ profile }) {
           </select>
         </div>
         <div className="form-group mb-3">
+        <label>Attatch image</label>
           <input
             type="file"
             name="image"
@@ -164,7 +182,17 @@ function PostForm({ profile }) {
             onChange={handleFileChange}
           />
         </div>
-
+ {/* ✅ Attach Document Button */}
+ <div className="form-group mb-3">
+          <label>Attach Doc (PDF, Word)</label>
+          <input
+            type="file"
+            name="doc"
+            className="form-control"
+            accept=".pdf, .doc, .docx"
+            onChange={handleDocChange}
+          />
+        </div>
         <button type="submit" className="btn btn-primary">
           Submit
         </button>

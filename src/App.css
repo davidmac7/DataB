@@ -44,3 +44,118 @@
     grid-template-columns: repeat(1, 1fr); /* 1 item per row on mobile */
   }
 }
+
+/* ================== PostDefect Styles ================== */
+
+/* General Page Styling */
+.post-defect-container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.post-defect-container h2 {
+  text-align: center;
+  color: #333;
+}
+
+/* Form Styling */
+.post-defect-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-defect-form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.post-defect-form input,
+.post-defect-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.post-defect-form button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.post-defect-form button:hover {
+  background: #0056b3;
+}
+
+/* Signature Pad */
+.signature-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.signature-pad {
+  width: 100%;
+  max-width: 600px; /* Prevents it from being too wide */
+  height: 200px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background: white;
+}
+
+
+/* Table Styling */
+.post-defect-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+}
+
+.post-defect-table th,
+.post-defect-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.post-defect-table th {
+  background: #007bff;
+  color: white;
+}
+
+.post-defect-table td {
+  background: #f4f4f4;
+}
+
+.post-defect-table td:focus {
+  outline: 2px solid #007bff;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .post-defect-form {
+    padding: 15px;
+  }
+
+  .post-defect-form input,
+  .post-defect-form select {
+    font-size: 14px;
+  }
+
+  .post-defect-table {
+    font-size: 14px;
+  }
+}

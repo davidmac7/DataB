@@ -7,8 +7,11 @@ import X from "./components/X";
 import R from "./components/R";
 import A from "./components/A";
 import SearchResults from "./components/SearchResults";
+import PostDefect from "./components/PostDefect";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "./App.css"; // Import your custom CSS
+
+
 
 
 
@@ -32,6 +35,7 @@ function App() {
               <Route path="/discover/R" element={<R profile={profile} />} />
               <Route path="/discover/A" element={<A profile={profile} />} />
               <Route path="/search" element={<SearchResults profile={profile} />} />
+              <Route path="/post-defect" element={<PostDefect profile={profile} />} />
             </Routes>
 
           </>

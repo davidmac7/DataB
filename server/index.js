@@ -267,13 +267,43 @@ app.get("/api/search", async (req, res) => {
       ...item,
       image_url: item.image_path ? `http://localhost:5000${item.image_path}` : null,
     }));
-    console.log(results);
+    // console.log(results);
     res.json(results);
   } catch (err) {
     console.error("Search error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get("/api/components", async (req, res) => {
+  const { category, aircraftId } = req.query;
+
+  if (!category || !aircraftId) {
+      return res.status(400).json({ error: "Missing category or aircraftId" });
+  }
+
+  try {
+      console.log("Fetching components for:", { category, aircraftId });
+
+      const result = await pool.query(
+          "SELECT name FROM components WHERE category = $1 AND aircraft_profile_id = $2",
+          [category, aircraftId]
+      );
+
+      // console.log("Query result:", result.rows);
+
+      if (result.rows.length === 0) {
+          return res.json([]); // Return an empty array if no components are found
+      }
+
+      res.json(result.rows.map(row => row.name));
+  } catch (error) {
+      console.error("Error fetching components:", error.message, error.stack);
+      res.status(500).json({ error: "Server error", details: error.message });
+  }
+});
+
+
 
 
 app.listen(5000, () => console.log("Server running on port 5000"));

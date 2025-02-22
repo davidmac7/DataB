@@ -40,6 +40,8 @@ function SearchResults({ profile }) {
               <h3>{item.name}</h3>
               <p>Part Number: {item.part_number}</p>
               <p>Serial Number: {item.serial_number}</p>
+              <p>Comment: {item.comment}</p>
+              <p>Status: {item.status}</p>
               {item.image_url ? (
                 <img src={item.image_url} alt="Component" width="200" height="200" />
               ) : (
