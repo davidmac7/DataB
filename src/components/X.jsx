@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
 function X({ profile }) {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Initialize the useNavigate hook
 
   useEffect(() => {
-
-
-
     const fetchComponents = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/get-components/X", { withCredentials: true });
@@ -25,6 +24,10 @@ function X({ profile }) {
 
     fetchComponents();
   }, []);
+
+  const handleAddDefectRegister = (componentId) => {
+    navigate(`/post-defect/${componentId}`); // Redirect to PostDefect.jsx with the componentId
+  };
 
   if (loading) return <p>Loading components...</p>;
   if (error) return <p>{error}</p>;
@@ -49,7 +52,10 @@ function X({ profile }) {
                   height="200"
                 />
               )}
-
+              {/* Add the 'Add Defect Register' button */}
+              <button onClick={() => handleAddDefectRegister(component.id)}>
+                Add Defect Register
+              </button>
             </div>
           ))}
         </div>

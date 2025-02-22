@@ -35,7 +35,7 @@ function App() {
               <Route path="/discover/R" element={<R profile={profile} />} />
               <Route path="/discover/A" element={<A profile={profile} />} />
               <Route path="/search" element={<SearchResults profile={profile} />} />
-              <Route path="/post-defect" element={<PostDefect profile={profile} />} />
+              <Route path="/post-defect/:componentId" element={<PostDefect />} />
             </Routes>
 
           </>

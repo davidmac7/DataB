@@ -275,6 +275,7 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
+//fetch list of components in category
 app.get("/api/components", async (req, res) => {
   const { category, aircraftId } = req.query;
 
@@ -303,7 +304,46 @@ app.get("/api/components", async (req, res) => {
   }
 });
 
+app.get('/api/get-defects/:componentId', (req, res) => {
+  const { componentId } = req.params;
+  // Fetch defect register data for the given componentId from the database
+  // Then respond with the data
+});
 
+app.post("/api/defects", async (req, res) => {
+    const {
+        category, component_name, defect_name, elimination_method,
+        performer_date, performer_signature, performer_name,
+        master_date, master_signature, master_name,
+        qc_date, qc_signature, qc_name,
+        engineer_date, engineer_signature, engineer_name
+    } = req.body;
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO defect_register 
+            (category, component_name, defect_name, elimination_method, 
+            performer_date, performer_signature, performer_name, 
+            master_date, master_signature, master_name, 
+            qc_date, qc_signature, qc_name, 
+            engineer_date, engineer_signature, engineer_name) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
+            RETURNING *`,
+            [
+                category, component_name, defect_name, elimination_method,
+                performer_date, performer_signature, performer_name,
+                master_date, master_signature, master_name,
+                qc_date, qc_signature, qc_name,
+                engineer_date, engineer_signature, engineer_name
+            ]
+        );
+
+        res.status(201).json({ message: "Defect registered successfully", defect: result.rows[0] });
+    } catch (error) {
+        console.error("Error saving defect:", error);
+        res.status(500).json({ error: "Server error", details: error.message });
+    }
+});
 
 
 app.listen(5000, () => console.log("Server running on port 5000"));
