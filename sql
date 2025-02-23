@@ -37,3 +37,15 @@ ALTER TABLE components ALTER COLUMN status TYPE VARCHAR(20);
 
 ALTER TABLE components ALTER COLUMN category TYPE VARCHAR(5);
 
+CREATE TABLE IF NOT EXISTS defects (
+    id SERIAL PRIMARY KEY,
+    component_id INT,
+    defect_name TEXT,
+    elimination_method TEXT,
+    work_date DATE,
+    performer_name TEXT,
+    master_name TEXT,
+    qc_name TEXT,
+    signature TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )

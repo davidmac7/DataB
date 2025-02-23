@@ -275,34 +275,7 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
-//fetch list of components in category
-app.get("/api/components", async (req, res) => {
-  const { category, aircraftId } = req.query;
 
-  if (!category || !aircraftId) {
-      return res.status(400).json({ error: "Missing category or aircraftId" });
-  }
-
-  try {
-      console.log("Fetching components for:", { category, aircraftId });
-
-      const result = await pool.query(
-          "SELECT name FROM components WHERE category = $1 AND aircraft_profile_id = $2",
-          [category, aircraftId]
-      );
-
-      // console.log("Query result:", result.rows);
-
-      if (result.rows.length === 0) {
-          return res.json([]); // Return an empty array if no components are found
-      }
-
-      res.json(result.rows.map(row => row.name));
-  } catch (error) {
-      console.error("Error fetching components:", error.message, error.stack);
-      res.status(500).json({ error: "Server error", details: error.message });
-  }
-});
 
 app.get('/api/get-defects/:componentId', (req, res) => {
   const { componentId } = req.params;
@@ -310,40 +283,51 @@ app.get('/api/get-defects/:componentId', (req, res) => {
   // Then respond with the data
 });
 
-app.post("/api/defects", async (req, res) => {
-    const {
-        category, component_name, defect_name, elimination_method,
-        performer_date, performer_signature, performer_name,
-        master_date, master_signature, master_name,
-        qc_date, qc_signature, qc_name,
-        engineer_date, engineer_signature, engineer_name
-    } = req.body;
+app.post("/api/saveDefect", async (req, res) => {
+  const { componentId, defects } = req.body;
 
-    try {
-        const result = await pool.query(
-            `INSERT INTO defect_register 
-            (category, component_name, defect_name, elimination_method, 
-            performer_date, performer_signature, performer_name, 
-            master_date, master_signature, master_name, 
-            qc_date, qc_signature, qc_name, 
-            engineer_date, engineer_signature, engineer_name) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
-            RETURNING *`,
-            [
-                category, component_name, defect_name, elimination_method,
-                performer_date, performer_signature, performer_name,
-                master_date, master_signature, master_name,
-                qc_date, qc_signature, qc_name,
-                engineer_date, engineer_signature, engineer_name
-            ]
-        );
+  try {
+        // Filter out any invalid defect data on the backend side as a precaution
+        const validDefects = defects.filter(defect => defect.defectName && defect.workDate);
 
-        res.status(201).json({ message: "Defect registered successfully", defect: result.rows[0] });
-    } catch (error) {
-        console.error("Error saving defect:", error);
-        res.status(500).json({ error: "Server error", details: error.message });
-    }
+        // Only process defects that have valid data
+        const defectPromises = validDefects.map(async (defect) => {
+          const workDate = defect.workDate && defect.workDate.trim() !== "" ? defect.workDate : new Date().toISOString().split('T')[0];
+    
+
+      const query = `
+        INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        RETURNING *;
+      `;
+
+      const values = [
+        componentId,
+        defect.defectName,
+        defect.eliminationMethod,
+        workDate,  // Use the updated workDate value
+        defect.performerName,
+        defect.masterName,
+        defect.qcName,
+      ];
+
+      const res = await pool.query(query, values);
+      return res.rows[0];
+    });
+
+    const savedDefects = await Promise.all(defectPromises);
+
+    res.status(200).json({
+      message: "Defects saved successfully.",
+      defects: savedDefects,
+    });
+  } catch (error) {
+    console.error("Error saving defects:", error);
+    res.status(500).json({ message: "Failed to save defects." });
+  }
 });
+
+
 
 
 app.listen(5000, () => console.log("Server running on port 5000"));
