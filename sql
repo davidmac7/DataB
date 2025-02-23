@@ -49,3 +49,12 @@ CREATE TABLE IF NOT EXISTS defects (
     signature TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
+
+CREATE TABLE IF NOT EXISTS signatures (
+    id SERIAL PRIMARY KEY,
+    component_id INT NOT NULL,
+    performer_signature_path TEXT NOT NULL,
+    master_signature_path TEXT NOT NULL,
+    qc_signature_path TEXT NOT NULL,
+    technical_signature_path TEXT NOT NULL
+  );

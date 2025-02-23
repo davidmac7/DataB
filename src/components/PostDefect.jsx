@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import SignaturePad from "react-signature-canvas";
 
 const PostDefect = () => {
   const { componentId } = useParams();
@@ -16,30 +17,34 @@ const PostDefect = () => {
     }))
   );
 
+  // Refs for signature pads
+  const performerRef = useRef(null);
+  const masterRef = useRef(null);
+  const qcRef = useRef(null);
+  const technicalRef = useRef(null);
+
   const handleInputChange = (index, field, value) => {
     const newDefects = [...defects];
     newDefects[index][field] = value;
     setDefects(newDefects);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitDefects = async () => {
     try {
-            // Filter out defects with missing required fields before sending to backend
-            const validDefects = defects.filter(
-              (defect) =>
-                defect.defectName.trim() !== "" &&
-                defect.workDate.trim() !== "" &&
-                defect.performerName.trim() !== "" &&
-                defect.masterName.trim() !== "" &&
-                defect.qcName.trim() !== ""
-            );
-      
-            // Ensure only valid defects are sent to the backend
-            const response = await axios.post("http://localhost:5000/api/saveDefect", {
-              componentId,
-              defects: validDefects,
-            });
-      
+      const validDefects = defects.filter(
+        (defect) =>
+          defect.defectName.trim() !== "" &&
+          defect.workDate.trim() !== "" &&
+          defect.performerName.trim() !== "" &&
+          defect.masterName.trim() !== "" &&
+          defect.qcName.trim() !== ""
+      );
+
+      const response = await axios.post("http://localhost:5000/api/saveDefect", {
+        componentId,
+        defects: validDefects,
+      });
+
       alert(response.data.message);
     } catch (error) {
       console.error("Error submitting defect:", error);
@@ -47,6 +52,48 @@ const PostDefect = () => {
     }
   };
 
+  const handleSubmitSignatures = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("componentId", componentId);
+
+      const addSignature = (ref, fieldName) => {
+        if (ref.current && !ref.current.isEmpty()) {
+          formData.append(fieldName, dataURLtoBlob(ref.current.toDataURL()));
+        }
+      };
+
+      addSignature(performerRef, "performerSignature");
+      addSignature(masterRef, "masterSignature");
+      addSignature(qcRef, "qcSignature");
+      addSignature(technicalRef, "technicalSignature"); // FIXED: Corrected field name
+
+      const response = await axios.post("http://localhost:5000/api/saveSignatures", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error submitting signatures:", error);
+      alert("Failed to save signatures.");
+    }
+  };
+
+  const clearSignature = (ref) => {
+    if (ref.current) ref.current.clear();
+  };
+
+  const dataURLtoBlob = (dataURL) => {
+    const byteString = atob(dataURL.split(",")[1]);
+    const mimeString = dataURL.split(",")[0].split(":")[1].split(";")[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  };
+  
   return (
     <div className="container mt-4">
       <h1 className="mb-3">Add the Defect Register</h1>
@@ -129,10 +176,34 @@ const PostDefect = () => {
         </tbody>
       </table>
 
-      {/* Submit Button */}
-      <div className="mt-4">
-        <button className="btn btn-success w-100" onClick={handleSubmit}>Submit</button>
-      </div>
+      <button className="btn btn-success w-100 mb-4" onClick={handleSubmitDefects}>
+        Submit Defects
+      </button>
+
+      {/* Signature Table */}
+      <h3>Signatures</h3>
+      <table className="table table-bordered">
+        <thead className="thead-dark">
+          <tr>
+            <th>Performer’s Signature</th>
+            <th>Master’s Signature</th>
+            <th>QC’s Signature</th>
+            <th>Technical Engineer’s Signature</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><SignaturePad ref={performerRef} canvasProps={{ className: "signature-pad" }} /><button onClick={() => clearSignature(performerRef)}>Clear</button></td>
+            <td><SignaturePad ref={masterRef} canvasProps={{ className: "signature-pad" }} /><button onClick={() => clearSignature(masterRef)}>Clear</button></td>
+            <td><SignaturePad ref={qcRef} canvasProps={{ className: "signature-pad" }} /><button onClick={() => clearSignature(qcRef)}>Clear</button></td>
+            <td><SignaturePad ref={technicalRef} canvasProps={{ className: "signature-pad" }} /><button onClick={() => clearSignature(technicalRef)}>Clear</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button className="btn btn-primary w-100" onClick={handleSubmitSignatures}>
+        Submit Signatures
+      </button>
     </div>
   );
 };

@@ -9,11 +9,13 @@ import fs from "fs";
 import path from "path";
 import session from "express-session"; // Import express-session
 import cookieSession from 'cookie-session';
+import signatureRoutes from "./sign.js";
 
 
 dotenv.config();
 
 const app = express();
+
 
 // ✅ Initialize the PostgreSQL pool BEFORE using it
 const pool = new pg.Pool({
@@ -43,9 +45,13 @@ const corsOptions = {
   origin: 'http://localhost:3000', // Allow only the frontend's origin
   credentials: true, // Allow cookies and credentials to be sent
 };
-
+app.use(cors());
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(express.static("signatures"));
+
+// Use the imported API routes
+app.use("/", signatureRoutes);
 
 // Create Profile
 app.post("/api/create-profile", async (req, res) => {
@@ -326,7 +332,6 @@ app.post("/api/saveDefect", async (req, res) => {
     res.status(500).json({ message: "Failed to save defects." });
   }
 });
-
 
 
 
