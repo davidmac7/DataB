@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SignaturePad from "react-signature-canvas";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const PostDefect = () => {
   const { componentId } = useParams();
@@ -51,33 +52,42 @@ const PostDefect = () => {
       alert("Failed to save defect.");
     }
   };
-
+  const navigate = useNavigate(); // Initialize navigate
   const handleSubmitSignatures = async () => {
     try {
       const formData = new FormData();
       formData.append("componentId", componentId);
-
+  
       const addSignature = (ref, fieldName) => {
         if (ref.current && !ref.current.isEmpty()) {
           formData.append(fieldName, dataURLtoBlob(ref.current.toDataURL()));
         }
       };
-
+  
       addSignature(performerRef, "performerSignature");
       addSignature(masterRef, "masterSignature");
       addSignature(qcRef, "qcSignature");
-      addSignature(technicalRef, "technicalSignature"); // FIXED: Corrected field name
-
+      addSignature(technicalRef, "technicalSignature");
+  
       const response = await axios.post("http://localhost:5000/api/saveSignatures", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       alert(response.data.message);
+  
+      // Update defect submission state in localStorage
+      const savedState = JSON.parse(localStorage.getItem("defectSubmitted")) || {};
+      savedState[componentId] = true;
+      localStorage.setItem("defectSubmitted", JSON.stringify(savedState));
+  
+      // Redirect using navigate
+    navigate("/x");
     } catch (error) {
       console.error("Error submitting signatures:", error);
       alert("Failed to save signatures.");
     }
   };
+  
 
   const clearSignature = (ref) => {
     if (ref.current) ref.current.clear();

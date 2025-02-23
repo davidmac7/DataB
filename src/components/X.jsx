@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 
 function X({ profile }) {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Initialize the useNavigate hook
+  const [defectSubmitted, setDefectSubmitted] = useState({}); // Store button state
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchComponents = async () => {
@@ -15,6 +16,10 @@ function X({ profile }) {
         console.log("API Response:", response.data);
         setComponents(response.data);
         setLoading(false);
+        
+        // Load defect submission state from localStorage
+        const savedState = JSON.parse(localStorage.getItem("defectSubmitted")) || {};
+        setDefectSubmitted(savedState);
       } catch (error) {
         setError("Error fetching components");
         setLoading(false);
@@ -26,7 +31,11 @@ function X({ profile }) {
   }, []);
 
   const handleAddDefectRegister = (componentId) => {
-    navigate(`/post-defect/${componentId}`); // Redirect to PostDefect.jsx with the componentId
+    navigate(`/post-defect/${componentId}`);
+  };
+
+  const handleViewDefect = (componentId) => {
+    navigate(`/view-defect/${componentId}`);
   };
 
   if (loading) return <p>Loading components...</p>;
@@ -45,17 +54,14 @@ function X({ profile }) {
               <p>Comment: {component.comment}</p>
               <p>Status: {component.status}</p>
               {component.image_url && (
-                <img
-                  src={component.image_url}
-                  alt="Component"
-                  width="200"
-                  height="200"
-                />
+                <img src={component.image_url} alt="Component" width="200" height="200" />
               )}
-              {/* Add the 'Add Defect Register' button */}
-              <button onClick={() => handleAddDefectRegister(component.id)}>
-                Add Defect Register
-              </button>
+              {/* Dynamic Button */}
+              {defectSubmitted[component.id] ? (
+                <button onClick={() => handleViewDefect(component.id)}>View Defect</button>
+              ) : (
+                <button onClick={() => handleAddDefectRegister(component.id)}>Add Defect Register</button>
+              )}
             </div>
           ))}
         </div>

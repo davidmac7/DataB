@@ -45,7 +45,7 @@ const corsOptions = {
   origin: 'http://localhost:3000', // Allow only the frontend's origin
   credentials: true, // Allow cookies and credentials to be sent
 };
-app.use(cors());
+
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static("signatures"));
