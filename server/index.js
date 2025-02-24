@@ -10,6 +10,7 @@ import path from "path";
 import session from "express-session"; // Import express-session
 import cookieSession from 'cookie-session';
 import signatureRoutes from "./sign.js";
+import { fileURLToPath } from "url";
 
 
 dotenv.config();
@@ -332,6 +333,24 @@ app.post("/api/saveDefect", async (req, res) => {
     res.status(500).json({ message: "Failed to save defects." });
   }
 });
+
+app.get("/api/viewDefect/:componentId", async (req, res) => {
+  const { componentId } = req.params;
+
+  try {
+    // Fetch defects
+    const defectQuery = "SELECT * FROM defects WHERE component_id = $1";
+    const defectResult = await pool.query(defectQuery, [componentId]);
+
+    res.status(200).json({
+      defects: defectResult.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching defects:", error);
+    res.status(500).json({ message: "Failed to retrieve data." });
+  }
+});
+
 
 
 
