@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -9,7 +9,7 @@ const ViewDefect = () => {
   const [signatures, setSignatures] = useState([]);
 
   useEffect(() => {
-    // Fetch defects data
+    // Fetch defect data
     const fetchDefectData = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/viewDefect/${componentId}`);
@@ -19,7 +19,7 @@ const ViewDefect = () => {
       }
     };
 
-    // Fetch signatures data
+    // Fetch signatures as images
     const fetchSignatures = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/viewSignatures/${componentId}`);
@@ -71,71 +71,58 @@ const ViewDefect = () => {
         </tbody>
       </table>
 
-      {/* Signatures Table
+      {/* Signature Row */}
       <h3>Signatures</h3>
-      <table className="table table-bordered">
-        <thead className="thead-dark">
-          <tr>
-            <th>Performer’s Signature</th>
-            <th>Master’s Signature</th>
-            <th>QC’s Signature</th>
-            <th>Technical Engineer’s Signature</th>
-          </tr>
-        </thead>
-        <tbody>
-          {signatures.length > 0 ? (
-            signatures.map((signature, index) => (
-              <tr key={index}>
-                <td>
-                  {signature.performerSignature ? (
-                    <img
-                      src={signature.performerSignature}
-                      alt="Performer Signature"
-                      className="signature-img"
-                      style={{ backgroundColor: "white", padding: "5px", border: "1px solid #ddd" }}
-                    />
-                  ) : "No Signature"}
-                </td>
-                <td>
-                  {signature.masterSignature ? (
-                    <img
-                      src={signature.masterSignature}
-                      alt="Master Signature"
-                      className="signature-img"
-                      style={{ backgroundColor: "white", padding: "5px", border: "1px solid #ddd" }}
-                    />
-                  ) : "No Signature"}
-                </td>
-                <td>
-                  {signature.qcSignature ? (
-                    <img
-                      src={signature.qcSignature}
-                      alt="QC Signature"
-                      className="signature-img"
-                      style={{ backgroundColor: "white", padding: "5px", border: "1px solid #ddd" }}
-                    />
-                  ) : "No Signature"}
-                </td>
-                <td>
-                  {signature.technicalSignature ? (
-                    <img
-                      src={signature.technicalSignature}
-                      alt="Technical Engineer Signature"
-                      className="signature-img"
-                      style={{ backgroundColor: "white", padding: "5px", border: "1px solid #ddd" }}
-                    />
-                  ) : "No Signature"}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="text-center">No signatures found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table> */}
+      <div className="d-flex justify-content-center mt-3">
+        {signatures.length > 0 ? (
+          signatures.map((signature, index) => (
+            <div key={index} className="mx-2">
+              {signature.performerSignature && (
+                <img
+                  src={`http://localhost:5000${signature.performerSignature}`}
+                  alt="Performer Signature"
+                  className="img-thumbnail"
+                  style={{ width: "120px", height: "60px" }}
+                />
+              )}
+              {signature.masterSignature && (
+                <img
+                  src={`http://localhost:5000${signature.masterSignature}`}
+                  alt="Master Signature"
+                  className="img-thumbnail"
+                  style={{ width: "120px", height: "60px" }}
+                />
+              )}
+              {signature.qcSignature && (
+                <img
+                  src={`http://localhost:5000${signature.qcSignature}`}
+                  alt="QC Signature"
+                  className="img-thumbnail"
+                  style={{ width: "120px", height: "60px" }}
+                />
+              )}
+              {signature.technicalSignature && (
+                <img
+                  src={`http://localhost:5000${signature.technicalSignature}`}
+                  alt="Technical Engineer Signature"
+                  className="img-thumbnail"
+                  style={{ width: "120px", height: "60px" }}
+                />
+              )}
+            </div>
+          ))
+        ) : (
+          <p>No signatures found.</p>
+        )}
+      </div>
+       {/* Add Defect Register Button */}
+       <div className="text-center mt-4">
+        <Link to={`/post-defect/${componentId}`} className="btn btn-primary">
+          Add More to Defect Register
+        </Link>
+      </div>
     </div>
+    
   );
 };
 

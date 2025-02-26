@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import pg from "pg";
 import cors from "cors";
+import fs from "fs";
 
 const router = express.Router();
 
@@ -27,6 +28,27 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+const getSignatureFile = (filePath) => {
+  if (!filePath) return null;
+
+  // Ensure filePath does not include 'signatures/' twice
+  const cleanedPath = filePath.replace(/^signatures[\\/]/, ""); 
+  const absolutePath = path.join(process.cwd(), "signatures", cleanedPath);
+
+  // console.log("Checking file path from DB:", filePath);
+  // console.log("Absolute path to check:", absolutePath);
+
+  if (fs.existsSync(absolutePath)) {
+    console.log("File found, returning:", `/signatures/${cleanedPath}`);
+    return `/signatures/${cleanedPath}`;
+  } else {
+    console.log("File NOT found:", absolutePath);
+    return null;
+  }
+};
+
+
 
 // Create signatures table if not exists
 pool.query(`
@@ -90,5 +112,44 @@ router.post(
     }
   }
 );
+
+// API to fetch signatures as images in a row format
+router.get("/api/viewSignatures/:componentId", async (req, res) => {
+  const { componentId } = req.params;
+
+  console.log("Fetching signatures for componentId:", componentId); // Debugging
+
+  try {
+    const query = `
+      SELECT performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path
+      FROM signatures
+      WHERE component_id = $1;
+    `;
+
+    const result = await pool.query(query, [componentId]);
+
+    console.log("Database query result:", result.rows); // Log what the query returns
+
+    if (result.rows.length === 0) {
+      console.log("No signatures found for componentId:", componentId);
+      return res.status(404).json({ message: "No signatures found" });
+    }
+    
+
+    // Extract signature file paths
+    const signaturePaths = result.rows.map((row) => ({
+      performerSignature: getSignatureFile(row.performer_signature_path),
+      masterSignature: getSignatureFile(row.master_signature_path),
+      qcSignature: getSignatureFile(row.qc_signature_path),
+      technicalSignature: getSignatureFile(row.technical_signature_path),
+    }));
+
+    console.log("Formatted signature paths:", signaturePaths); // Log the final output
+    res.json({ signatures: signaturePaths });
+  } catch (error) {
+    console.error("Error fetching signatures:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;

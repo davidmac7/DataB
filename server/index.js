@@ -50,9 +50,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static("signatures"));
+app.use("/signatures", express.static(path.join(process.cwd(), "signatures")));
+
+
 
 // Use the imported API routes
 app.use("/", signatureRoutes);
+
 
 // Create Profile
 app.post("/api/create-profile", async (req, res) => {
