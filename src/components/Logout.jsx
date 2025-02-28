@@ -1,18 +1,30 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-function Logout() {
+const Logout = ({ setProfile }) => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Clear profile from localStorage
-    localStorage.removeItem("userProfile");
+  const handleLogout = () => {
+    setProfile(null); // Clear profile state
+    navigate("/"); // Redirect to login
+  };
 
-    // Redirect to login page
-    navigate("/login");
-  }, [navigate]);
+  return (
+    <div style={styles.container}>
+      <button className="btn btn-danger" onClick={handleLogout}>
+        Logout
+      </button>
+    </div>
+  );
+};
 
-  return null; // You don't need to render anything for logout
-}
+const styles = {
+  container: {
+    position: "absolute",
+    top: "10px",
+    right: "20px",
+    zIndex: 1000, // Ensures it's above other elements
+  },
+};
 
 export default Logout;

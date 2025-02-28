@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
+
 function Navbar({ profile }) {
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,8 +14,14 @@ function Navbar({ profile }) {
       navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
+   
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container">
         <Link className="navbar-brand" to="/">
@@ -25,8 +32,9 @@ function Navbar({ profile }) {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
+        <div className="mx-auto">
+            <ul className="navbar-nav d-flex justify-content-center">
+
             <li className="nav-item dropdown">
               <Link
                 className="nav-link dropdown-toggle"
@@ -48,16 +56,15 @@ function Navbar({ profile }) {
             <li className="nav-item">
               <Link className="nav-link" to="/post">Post</Link> {/* ✅ This will navigate to PostForm */}
             </li>
-            {/* <li className="nav-item">
-              <Link className="nav-link" to="/post-defect">Post Defect</Link> 
-            </li> */}
+            
             <li className="nav-item">
               <div className="input-group">
                 <input
                   type="text"
-                  placeholder="Search by Name or Part Number"
+                  placeholder="Search Name or Part Number"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}  
                   className="search-input"
                 />
                 <button onClick={handleSearch} className="search-btn">
@@ -65,23 +72,13 @@ function Navbar({ profile }) {
                 </button>
               </div>
             </li>
-            <li className="nav-item">
-              <button
-                className="btn btn-danger ms-3"
-                onClick={() => {
-                  window.location.href = "/logout";
-                }}
-              >
-                Logout
-              </button>
-
-
-            </li>
+           
           </ul>
         </div>
 
       </div>
     </nav>
+    
   );
 }
 

@@ -11,7 +11,8 @@ import PostDefect from "./components/PostDefect";
 import ViewDefect from "./components/ViewDefect";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "./App.css"; // Import your custom CSS
-
+import Logout from "./components/Logout"; // Import Logout Component
+import Home from "./components/Home";
 
 
 
@@ -27,9 +28,13 @@ function App() {
           <AuthForm setProfile={setProfile} />
         ) : (
           <>
+          {/* Logout Button at top */}
+          <Logout setProfile={setProfile} />
+
             <Navbar profile={profile} /> {/* Pass setProfile to Navbar */}
 
             <Routes>
+            <Route path="/" element={<Home profile={profile} />} />
               <Route path="/post" element={<PostForm profile={profile} />} />
               <Route path="/discover/X" element={<X profile={profile} />} />
               <Route path="/discover/R" element={<R profile={profile} />} />
@@ -39,6 +44,8 @@ function App() {
               <Route path="/view-defect/:componentId" element={<ViewDefect />} />
             </Routes>
 
+          
+          
           </>
         )}
       </div>

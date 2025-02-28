@@ -81,7 +81,7 @@ const PostDefect = () => {
       localStorage.setItem("defectSubmitted", JSON.stringify(savedState));
   
       // Redirect using navigate
-    navigate("/x");
+    navigate("/");
     } catch (error) {
       console.error("Error submitting signatures:", error);
       alert("Failed to save signatures.");

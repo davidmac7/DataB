@@ -37,7 +37,7 @@ const ViewDefect = () => {
     <div className="container mt-4">
       <h1 className="mb-3">View Defect Register</h1>
       <p>Defect register for component ID: {componentId}</p>
-
+  
       {/* Defects Table */}
       <h3>Defects</h3>
       <table className="table table-bordered">
@@ -70,44 +70,56 @@ const ViewDefect = () => {
           )}
         </tbody>
       </table>
-
+  
       {/* Signature Row */}
       <h3>Signatures</h3>
       <div className="d-flex justify-content-center mt-3">
         {signatures.length > 0 ? (
           signatures.map((signature, index) => (
-            <div key={index} className="mx-2">
+            <div key={index} className="mx-3 text-center">
               {signature.performerSignature && (
-                <img
-                  src={`http://localhost:5000${signature.performerSignature}`}
-                  alt="Performer Signature"
-                  className="img-thumbnail"
-                  style={{ width: "120px", height: "60px" }}
-                />
+                <div>
+                  <p><strong>Performer’s Signature</strong></p>
+                  <img
+                    src={`http://localhost:5000${signature.performerSignature}`}
+                    alt="Performer Signature"
+                    className="img-thumbnail"
+                    style={{ width: "120px", height: "60px" }}
+                  />
+                </div>
               )}
               {signature.masterSignature && (
-                <img
-                  src={`http://localhost:5000${signature.masterSignature}`}
-                  alt="Master Signature"
-                  className="img-thumbnail"
-                  style={{ width: "120px", height: "60px" }}
-                />
+                <div>
+                  <p><strong>Master’s Signature</strong></p>
+                  <img
+                    src={`http://localhost:5000${signature.masterSignature}`}
+                    alt="Master Signature"
+                    className="img-thumbnail"
+                    style={{ width: "120px", height: "60px" }}
+                  />
+                </div>
               )}
               {signature.qcSignature && (
-                <img
-                  src={`http://localhost:5000${signature.qcSignature}`}
-                  alt="QC Signature"
-                  className="img-thumbnail"
-                  style={{ width: "120px", height: "60px" }}
-                />
+                <div>
+                  <p><strong>QC’s Signature</strong></p>
+                  <img
+                    src={`http://localhost:5000${signature.qcSignature}`}
+                    alt="QC Signature"
+                    className="img-thumbnail"
+                    style={{ width: "120px", height: "60px" }}
+                  />
+                </div>
               )}
               {signature.technicalSignature && (
-                <img
-                  src={`http://localhost:5000${signature.technicalSignature}`}
-                  alt="Technical Engineer Signature"
-                  className="img-thumbnail"
-                  style={{ width: "120px", height: "60px" }}
-                />
+                <div>
+                  <p><strong>Technical Engineer’s Signature</strong></p>
+                  <img
+                    src={`http://localhost:5000${signature.technicalSignature}`}
+                    alt="Technical Engineer Signature"
+                    className="img-thumbnail"
+                    style={{ width: "120px", height: "60px" }}
+                  />
+                </div>
               )}
             </div>
           ))
@@ -115,15 +127,16 @@ const ViewDefect = () => {
           <p>No signatures found.</p>
         )}
       </div>
-       {/* Add Defect Register Button */}
-       <div className="text-center mt-4">
+  
+      {/* Add Defect Register Button */}
+      <div className="text-center mt-4">
         <Link to={`/post-defect/${componentId}`} className="btn btn-primary">
           Add More to Defect Register
         </Link>
       </div>
     </div>
-    
   );
+  
 };
 
 export default ViewDefect;
