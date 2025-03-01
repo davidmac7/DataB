@@ -40,14 +40,28 @@ app.use(
   })
 );
 
+// Allow requests from multiple frontend ports
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
+];
 
-// Define the allowed origins and enable credentials
-const corsOptions = {
-  origin: 'http://localhost:3000', // Allow only the frontend's origin
-  credentials: true, // Allow cookies and credentials to be sent
-};
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Allow cookies & authentication headers
+  })
+);
 
-app.use(cors(corsOptions));
+
 app.use(bodyParser.json());
 app.use(express.static("signatures"));
 app.use("/signatures", express.static(path.join(process.cwd(), "signatures")));
@@ -259,7 +273,7 @@ app.get("/api/get-components/A", async (req, res) => {
 
 app.use("/uploads", express.static("uploads"));
 
-app.get("/api/search", async (req, res) => {
+app.get("/api/X/search", async (req, res) => {
   const { query, aircraftId } = req.query;
   if (!query || !aircraftId) return res.status(400).json({ error: "Missing parameters" });
 
@@ -268,6 +282,7 @@ app.get("/api/search", async (req, res) => {
       `SELECT * 
        FROM components 
        WHERE aircraft_profile_id = $1 
+       AND category = 'X'  -- Only select from category X
        AND (LOWER(name) LIKE LOWER($2) OR LOWER(part_number) LIKE LOWER($2))`,
       [aircraftId, `%${query}%`]
       
@@ -286,7 +301,61 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
+app.get("/api/R/search", async (req, res) => {
+  const { query, aircraftId } = req.query;
+  if (!query || !aircraftId) return res.status(400).json({ error: "Missing parameters" });
 
+  try {
+    const result = await pool.query(
+      `SELECT * 
+       FROM components 
+       WHERE aircraft_profile_id = $1 
+       AND category = 'R'  -- Only select from category X
+       AND (LOWER(name) LIKE LOWER($2) OR LOWER(part_number) LIKE LOWER($2))`,
+      [aircraftId, `%${query}%`]
+      
+    );
+
+    // Append full URL for images
+    const results = result.rows.map((item) => ({
+      ...item,
+      image_url: item.image_path ? `http://localhost:5000${item.image_path}` : null,
+    }));
+    // console.log(results);
+    res.json(results);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/A/search", async (req, res) => {
+  const { query, aircraftId } = req.query;
+  if (!query || !aircraftId) return res.status(400).json({ error: "Missing parameters" });
+
+  try {
+    const result = await pool.query(
+      `SELECT * 
+       FROM components 
+       WHERE aircraft_profile_id = $1 
+       AND category = 'A'  -- Only select from category X
+       AND (LOWER(name) LIKE LOWER($2) OR LOWER(part_number) LIKE LOWER($2))`,
+      [aircraftId, `%${query}%`]
+      
+    );
+
+    // Append full URL for images
+    const results = result.rows.map((item) => ({
+      ...item,
+      image_url: item.image_path ? `http://localhost:5000${item.image_path}` : null,
+    }));
+    // console.log(results);
+    res.json(results);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 app.get('/api/get-defects/:componentId', (req, res) => {
   const { componentId } = req.params;

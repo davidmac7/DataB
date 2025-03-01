@@ -45,6 +45,7 @@ function AuthForm({ setProfile }) {
     <div className="container mt-5">
       {!mode && (
         <div className="text-center">
+          <h3>Admin</h3>
           <button className="btn btn-primary m-2" onClick={() => setMode("login")}>
             Login
           </button>
