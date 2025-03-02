@@ -31,7 +31,9 @@ function X({ profile }) {
   const handleViewDefect = (componentId) => {
     navigate(`/view-defect/${componentId}`);
   };
-
+  const handleAddDefect = (componentId) => {
+    navigate(`/post-defect/${componentId}`);
+  };
   if (loading) return <p>Loading components...</p>;
   if (error) return <p>{error}</p>;
 
@@ -52,6 +54,7 @@ function X({ profile }) {
               )}
               {/* View Defect Button */}
               <button onClick={() => handleViewDefect(component.id)}>View Defect</button>
+              <button onClick={() => handleAddDefect(component.id)}>Add Defect Register</button>
             </div>
           ))}
         </div>

@@ -11,6 +11,8 @@ import session from "express-session"; // Import express-session
 import cookieSession from 'cookie-session';
 import signatureRoutes from "./sign.js";
 import { fileURLToPath } from "url";
+import { uploads } from './upload.js'; // Import the multer upload from upload.js
+
 
 
 dotenv.config();
@@ -453,7 +455,6 @@ app.get('/api/check-defect-status/:componentId', async (req, res) => {
 });
 
 
-
 app.get("/api/viewDefect/:componentId", async (req, res) => {
   const { componentId } = req.params;
 
@@ -471,6 +472,85 @@ app.get("/api/viewDefect/:componentId", async (req, res) => {
   }
 });
 
+// Endpoint to handle file upload
+app.post("/uploads", upload.single("file"), async (req, res) => {
+  try {
+    const { componentId } = req.body;
+    const filePath = req.file ? req.file.path : null;
+
+    if (!componentId || !filePath) {
+      return res.status(400).json({ error: "Missing component ID or file" });
+    }
+
+    const client = await pool.connect();
+    await client.query(
+      "INSERT INTO files (component_id, file_path) VALUES ($1, $2)",
+      [componentId, filePath]
+    );
+    client.release();
+
+    res.status(200).json({ message: "File uploaded and saved!", filePath });
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+});
+
+
+
+
+app.post('/api/saveDefect', upload.any(), async (req, res) => {
+  try {
+    console.log("Request Body:", req.body); // Log request body for debugging
+
+    const { componentId, defects } = req.body;
+
+    if (!defects) {
+      return res.status(400).json({ error: 'Defects data is missing or invalid.' });
+    }
+
+    let parsedDefects;
+    try {
+      parsedDefects = JSON.parse(defects); // Deserialize defects data
+    } catch (error) {
+      return res.status(400).json({ error: 'Failed to parse defects data' });
+    }
+
+    if (!Array.isArray(parsedDefects)) {
+      return res.status(400).json({ error: 'Defects data is not an array' });
+    }
+
+    console.log("Parsed Defects:", parsedDefects);
+
+    const client = await pool.connect();
+
+    for (let defect of parsedDefects) {
+      if (!defect.defectId) {
+        return res.status(400).json({ error: 'Each defect entry must have a defectId' });
+      }
+
+      await client.query(
+        `INSERT INTO defectz (defect_id, component_id, defect_name, elimination_method, work_date, performer_name, signature_path, file_path) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          defect.defectId, // Ensure defectId is passed and stored
+          componentId,
+          defect.defectName,
+          defect.eliminationMethod,
+          defect.workDate,
+          defect.performerName,
+          req.files.find(file => file.fieldname === `performerSignature${defect.defectId}`)?.path || null,
+          req.files.find(file => file.fieldname === 'file')?.path || null,
+        ]
+      );
+    }
+
+    res.status(200).json({ message: 'Defects, signatures, and documents saved successfully!' });
+  } catch (error) {
+    console.error('Error saving defect data:', error);
+    res.status(500).json({ error: 'Failed to save defect data' });
+  }
+});
 
 
 

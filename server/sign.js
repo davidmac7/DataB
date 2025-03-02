@@ -94,7 +94,7 @@ router.post(
 
       // Insert signature paths into the database
       const result = await pool.query(
-        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path)
+        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path,)
          VALUES ($1, $2, $3, $4, $5) RETURNING *`,
         [
           componentId,
@@ -121,7 +121,7 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
 
   try {
     const query = `
-      SELECT performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path
+      SELECT performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path, defect_id
       FROM signatures
       WHERE component_id = $1;
     `;

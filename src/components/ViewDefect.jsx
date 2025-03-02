@@ -57,7 +57,8 @@ const ViewDefect = () => {
               <tr key={index}>
                 <td>{defect.defect_name}</td>
                 <td>{defect.elimination_method}</td>
-                <td>{defect.date_work_done}</td>
+                <td>{new Date(defect.date_work_done).toLocaleDateString("en-CA")}</td>
+
                 <td>{defect.performer_name}</td>
                 <td>{defect.master_name}</td>
                 <td>{defect.qc_name}</td>

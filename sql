@@ -58,3 +58,11 @@ CREATE TABLE IF NOT EXISTS signatures (
     qc_signature_path TEXT NOT NULL,
     technical_signature_path TEXT NOT NULL
   );
+
+  ALTER TABLE signatures
+ADD CONSTRAINT fk_defect
+FOREIGN KEY (defect_id) REFERENCES defects(defect_id) ON DELETE CASCADE;
+
+ALTER TABLE signatures
+ADD CONSTRAINT fk_defect
+FOREIGN KEY (defect_id) REFERENCES defects(defect_id) ON DELETE CASCADE;
