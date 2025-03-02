@@ -187,7 +187,7 @@ app.get("/api/get-components/X", async (req, res) => {
   try {
     const query = `
       SELECT * FROM components 
-      WHERE category = 'X' AND aircraft_profile_id = $1
+      WHERE category = 'X' AND aircraft_profile_id = $1 
     `;
     const values = [aircraftProfileId];
 
@@ -272,6 +272,33 @@ app.get("/api/get-components/A", async (req, res) => {
 });
 
 app.use("/uploads", express.static("uploads"));
+
+app.get("/api/search", async (req, res) => {
+  const { query, aircraftId } = req.query;
+  if (!query || !aircraftId) return res.status(400).json({ error: "Missing parameters" });
+
+  try {
+    const result = await pool.query(
+      `SELECT * 
+       FROM components 
+       WHERE aircraft_profile_id = $1 
+       AND (LOWER(name) LIKE LOWER($2) OR LOWER(part_number) LIKE LOWER($2))`,
+      [aircraftId, `%${query}%`]
+      
+    );
+
+    // Append full URL for images
+    const results = result.rows.map((item) => ({
+      ...item,
+      image_url: item.image_path ? `http://localhost:5000${item.image_path}` : null,
+    }));
+    // console.log(results);
+    res.json(results);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 app.get("/api/X/search", async (req, res) => {
   const { query, aircraftId } = req.query;
@@ -367,17 +394,15 @@ app.post("/api/saveDefect", async (req, res) => {
   const { componentId, defects } = req.body;
 
   try {
-        // Filter out any invalid defect data on the backend side as a precaution
-        const validDefects = defects.filter(defect => defect.defectName && defect.workDate);
+    // Filter valid defects
+    const validDefects = defects.filter(defect => defect.defectName && defect.workDate);
 
-        // Only process defects that have valid data
-        const defectPromises = validDefects.map(async (defect) => {
-          const workDate = defect.workDate && defect.workDate.trim() !== "" ? defect.workDate : new Date().toISOString().split('T')[0];
-    
+    const defectPromises = validDefects.map(async (defect) => {
+      const workDate = defect.workDate.trim() !== "" ? defect.workDate : new Date().toISOString().split('T')[0];
 
       const query = `
-        INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, is_submitted, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, NOW())
         RETURNING *;
       `;
 
@@ -385,21 +410,22 @@ app.post("/api/saveDefect", async (req, res) => {
         componentId,
         defect.defectName,
         defect.eliminationMethod,
-        workDate,  // Use the updated workDate value
+        workDate,
         defect.performerName,
         defect.masterName,
         defect.qcName,
       ];
 
-      const res = await pool.query(query, values);
-      return res.rows[0];
+      const result = await pool.query(query, values);
+      return result.rows[0];
     });
 
-    const savedDefects = await Promise.all(defectPromises);
+    await Promise.all(defectPromises);
+
+
 
     res.status(200).json({
-      message: "Defects saved successfully.",
-      defects: savedDefects,
+      message: "Defects saved successfully and marked as submitted.",
     });
   } catch (error) {
     console.error("Error saving defects:", error);
@@ -407,12 +433,33 @@ app.post("/api/saveDefect", async (req, res) => {
   }
 });
 
+app.get('/api/check-defect-status/:componentId', async (req, res) => {
+  const componentId = req.params.componentId;
+  try {
+    const result = await pool.query(
+      'SELECT is_submitted FROM defects WHERE component_id = $1',
+      [componentId]
+    );
+    if (result.rows.length > 0) {
+      res.json({ is_submitted: result.rows[0].is_submitted });
+    } else {
+      // Instead of 404, return is_submitted as false
+      res.json({ is_submitted: false });
+    }
+  } catch (err) {
+    console.error('Error fetching defect status:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
 app.get("/api/viewDefect/:componentId", async (req, res) => {
   const { componentId } = req.params;
 
   try {
-    // Fetch defects
-    const defectQuery = "SELECT * FROM defects WHERE component_id = $1";
+    // Fetch only submitted defects for the given component_id
+    const defectQuery = "SELECT * FROM defects WHERE component_id = $1 AND is_submitted = TRUE";
     const defectResult = await pool.query(defectQuery, [componentId]);
 
     res.status(200).json({
@@ -423,6 +470,7 @@ app.get("/api/viewDefect/:componentId", async (req, res) => {
     res.status(500).json({ message: "Failed to retrieve data." });
   }
 });
+
 
 
 

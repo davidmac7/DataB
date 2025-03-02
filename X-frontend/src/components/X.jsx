@@ -6,20 +6,18 @@ function X({ profile }) {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [defectSubmitted, setDefectSubmitted] = useState({}); // Store button state
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchComponents = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/get-components/X", { withCredentials: true });
+        const response = await axios.get("http://localhost:5000/api/get-components/X", {
+          withCredentials: true,
+        });
+
         console.log("API Response:", response.data);
         setComponents(response.data);
         setLoading(false);
-        
-        // Load defect submission state from localStorage
-        const savedState = JSON.parse(localStorage.getItem("defectSubmitted")) || {};
-        setDefectSubmitted(savedState);
       } catch (error) {
         setError("Error fetching components");
         setLoading(false);
@@ -29,10 +27,6 @@ function X({ profile }) {
 
     fetchComponents();
   }, []);
-
-  const handleAddDefectRegister = (componentId) => {
-    navigate(`/post-defect/${componentId}`);
-  };
 
   const handleViewDefect = (componentId) => {
     navigate(`/view-defect/${componentId}`);
@@ -56,12 +50,8 @@ function X({ profile }) {
               {component.image_url && (
                 <img src={component.image_url} alt="Component" width="200" height="200" />
               )}
-              {/* Dynamic Button */}
-              {defectSubmitted[component.id] ? (
-                <button onClick={() => handleViewDefect(component.id)}>View Defect</button>
-              ) : (
-                <button onClick={() => handleAddDefectRegister(component.id)}>Add Defect Register</button>
-              )}
+              {/* View Defect Button */}
+              <button onClick={() => handleViewDefect(component.id)}>View Defect</button>
             </div>
           ))}
         </div>
