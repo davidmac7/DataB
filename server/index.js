@@ -404,7 +404,7 @@ app.post("/api/saveDefect", async (req, res) => {
 
       const query = `
         INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
         RETURNING *;
       `;
 

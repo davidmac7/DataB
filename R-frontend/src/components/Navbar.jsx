@@ -49,6 +49,7 @@ function Navbar({ profile }) {
               <ul className="dropdown-menu" aria-labelledby="discoverDropdown">
                 
                 <li><Link className="dropdown-item" to="/discover/R">R</Link></li>
+                <li><Link className="dropdown-item" to="/discover/X">X</Link></li>
                 
               </ul>
             </li>

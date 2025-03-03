@@ -94,7 +94,7 @@ router.post(
 
       // Insert signature paths into the database
       const result = await pool.query(
-        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path,)
+        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path)
          VALUES ($1, $2, $3, $4, $5) RETURNING *`,
         [
           componentId,
