@@ -8,6 +8,8 @@ const PostDefect = () => {
   const { componentId } = useParams();
   const navigate = useNavigate();
   
+  const [signatureDate, setSignatureDate] = useState(""); // Added state for the date
+
   const [defects, setDefects] = useState(
     Array.from({ length: 5 }, () => ({
       defectName: "",
@@ -50,6 +52,7 @@ const PostDefect = () => {
       // Submit signatures
       const formData = new FormData();
       formData.append("componentId", componentId);
+      formData.append("signatureDate", signatureDate); // Append signature date
 
       const addSignature = (ref, fieldName) => {
         if (ref.current && !ref.current.isEmpty()) {
@@ -125,6 +128,16 @@ const PostDefect = () => {
       </table>
 
       <h3>Signatures</h3>
+       {/* Added row for selecting date before signatures */}
+       <div className="mb-3">
+        <label>Select Date:</label>
+        <input
+          type="date"
+          className="form-control"
+          value={signatureDate}
+          onChange={(e) => setSignatureDate(e.target.value)}
+        />
+      </div>
       <table className="table table-bordered">
         <thead className="thead-dark">
           <tr>

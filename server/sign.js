@@ -73,7 +73,7 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const { componentId } = req.body;
+      const { componentId, signatureDate } = req.body;
 
       if (!componentId) {
         return res.status(400).json({ error: "Component ID is required" });
@@ -94,14 +94,16 @@ router.post(
 
       // Insert signature paths into the database
       const result = await pool.query(
-        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path, signature_date)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+         
         [
           componentId,
           performerSignaturePath,
           masterSignaturePath,
           qcSignaturePath,
           technicalSignaturePath,
+          signatureDate
         ]
       );
 
@@ -113,7 +115,15 @@ router.post(
   }
 );
 
-// API to fetch signatures as images in a row format
+const formatDate = (date) => {
+  if (!date) return null;
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 router.get("/api/viewSignatures/:componentId", async (req, res) => {
   const { componentId } = req.params;
 
@@ -121,7 +131,8 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
 
   try {
     const query = `
-      SELECT *
+      SELECT performer_signature_path, master_signature_path, qc_signature_path, 
+             technical_signature_path, signature_date
       FROM signatures
       WHERE component_id = $1;
     `;
@@ -134,22 +145,23 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
       console.log("No signatures found for componentId:", componentId);
       return res.status(404).json({ message: "No signatures found" });
     }
-    
 
-    // Extract signature file paths
-    const signaturePaths = result.rows.map((row) => ({
+    // Extract signature file paths along with signature_date
+    const signatureData = result.rows.map((row) => ({
       performerSignature: getSignatureFile(row.performer_signature_path),
       masterSignature: getSignatureFile(row.master_signature_path),
       qcSignature: getSignatureFile(row.qc_signature_path),
       technicalSignature: getSignatureFile(row.technical_signature_path),
+      signatureDate: formatDate (row.signature_date), // Include signature_date in response
     }));
 
-    console.log("Formatted signature paths:", signaturePaths); // Log the final output
-    res.json({ signatures: signaturePaths });
+    console.log("Formatted signature data:", signatureData); // Log the final output
+    res.json({ signatures: signatureData });
   } catch (error) {
     console.error("Error fetching signatures:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 export default router;

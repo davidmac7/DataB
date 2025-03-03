@@ -66,3 +66,5 @@ FOREIGN KEY (defect_id) REFERENCES defects(defect_id) ON DELETE CASCADE;
 ALTER TABLE signatures
 ADD CONSTRAINT fk_defect
 FOREIGN KEY (defect_id) REFERENCES defects(defect_id) ON DELETE CASCADE;
+
+ALTER TABLE signatures ADD COLUMN signature_date DATE;
