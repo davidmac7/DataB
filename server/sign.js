@@ -121,7 +121,7 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
 
   try {
     const query = `
-      SELECT performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path, defect_id
+      SELECT *
       FROM signatures
       WHERE component_id = $1;
     `;

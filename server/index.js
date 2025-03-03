@@ -403,7 +403,7 @@ app.post("/api/saveDefect", async (req, res) => {
       const workDate = defect.workDate.trim() !== "" ? defect.workDate : new Date().toISOString().split('T')[0];
 
       const query = `
-        INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, is_submitted, created_at)
+        INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, NOW())
         RETURNING *;
       `;
@@ -435,24 +435,6 @@ app.post("/api/saveDefect", async (req, res) => {
   }
 });
 
-app.get('/api/check-defect-status/:componentId', async (req, res) => {
-  const componentId = req.params.componentId;
-  try {
-    const result = await pool.query(
-      'SELECT is_submitted FROM defects WHERE component_id = $1',
-      [componentId]
-    );
-    if (result.rows.length > 0) {
-      res.json({ is_submitted: result.rows[0].is_submitted });
-    } else {
-      // Instead of 404, return is_submitted as false
-      res.json({ is_submitted: false });
-    }
-  } catch (err) {
-    console.error('Error fetching defect status:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 
 app.get("/api/viewDefect/:componentId", async (req, res) => {
@@ -460,7 +442,7 @@ app.get("/api/viewDefect/:componentId", async (req, res) => {
 
   try {
     // Fetch only submitted defects for the given component_id
-    const defectQuery = "SELECT * FROM defects WHERE component_id = $1 AND is_submitted = TRUE";
+    const defectQuery = "SELECT * FROM defects WHERE component_id = $1";
     const defectResult = await pool.query(defectQuery, [componentId]);
 
     res.status(200).json({
