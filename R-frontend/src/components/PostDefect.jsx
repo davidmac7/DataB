@@ -32,6 +32,12 @@ const PostDefect = () => {
     setDefects(newDefects);
   };
 
+  // Function to dynamically resize textarea
+const autoResize = (event) => {
+  event.target.style.height = "auto";
+  event.target.style.height = event.target.scrollHeight + "px";
+};
+
   const handleSubmit = async () => {
     try {
       // Submit defects
@@ -116,8 +122,29 @@ const PostDefect = () => {
         <tbody>
           {defects.map((defect, index) => (
             <tr key={index}>
-              <td><input type="text" className="form-control" value={defect.defectName} onChange={(e) => handleInputChange(index, "defectName", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.eliminationMethod} onChange={(e) => handleInputChange(index, "eliminationMethod", e.target.value)} /></td>
+               {/* Expanding Textarea Fields */}
+            <td>
+              <textarea
+                className="form-control"
+                value={defect.defectName}
+                onChange={(e) => handleInputChange(index, "defectName", e.target.value)}
+                onInput={autoResize} // Resize on input
+                rows="1"
+                style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
+              />
+            </td>
+            <td>
+              <textarea
+                className="form-control"
+                value={defect.eliminationMethod}
+                onChange={(e) => handleInputChange(index, "eliminationMethod", e.target.value)}
+                onInput={autoResize}
+                rows="1"
+                style={{ overflow: "hidden", resize: "none" }}
+              />
+            </td>
+ {/* Regular Input Fields */}
+             
               <td><input type="date" className="form-control" value={defect.workDate} onChange={(e) => handleInputChange(index, "workDate", e.target.value)} /></td>
               <td><input type="text" className="form-control" value={defect.performerName} onChange={(e) => handleInputChange(index, "performerName", e.target.value)} /></td>
               <td><input type="text" className="form-control" value={defect.masterName} onChange={(e) => handleInputChange(index, "masterName", e.target.value)} /></td>
