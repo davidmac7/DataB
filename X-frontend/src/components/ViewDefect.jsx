@@ -33,6 +33,15 @@ const ViewDefect = () => {
     fetchSignatures();
   }, [componentId]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+  
   return (
     <div className="container mt-4">
       <h1 className="mb-3">View Defect Register</h1>
@@ -41,150 +50,103 @@ const ViewDefect = () => {
       {/* Defects Table */}
       <h3>Defects</h3>
       <table className="table table-bordered">
-      <thead className="thead-dark">
-  <tr>
-    <th>Defect Name</th>
-    <th>Elimination Method</th>
-    <th>Date work was done</th>
-    <th>Performer’s Name</th>
-    <th>Master’s Name</th>
-    <th>QC’s Name</th>
-    <th>Performer’s Signature</th>
-    <th>Master’s Signature</th>
-    <th>QC’s Signature</th>
-    <th>Technical Engineer’s Signature</th>
-  </tr>
-</thead>
-
-<tbody>
-  {defects.length > 0 ? (
-    defects.map((defect, index) => {
-      // Find the matching signature for this defect
-      const signature = signatures.find(sig => sig.defect_id === defect.defect_id);
-      
-      return (
-        <tr key={index}>
-          <td>{defect.defect_name}</td>
-          <td>{defect.elimination_method}</td>
-          <td>{new Date(defect.date_work_done).toLocaleDateString("en-CA")}</td>
-          <td>{defect.performer_name}</td>
-          <td>{defect.master_name}</td>
-          <td>{defect.qc_name}</td>
-
-          {/* Signature Columns */}
-          <td>
-            {signature?.performerSignature && (
-              <img
-                src={`http://localhost:5000${signature.performerSignature}`}
-                alt="Performer Signature"
-                className="img-thumbnail"
-                style={{ width: "120px", height: "60px" }}
-              />
-            )}
-          </td>
-          <td>
-            {signature?.masterSignature && (
-              <img
-                src={`http://localhost:5000${signature.masterSignature}`}
-                alt="Master Signature"
-                className="img-thumbnail"
-                style={{ width: "120px", height: "60px" }}
-              />
-            )}
-          </td>
-          <td>
-            {signature?.qcSignature && (
-              <img
-                src={`http://localhost:5000${signature.qcSignature}`}
-                alt="QC Signature"
-                className="img-thumbnail"
-                style={{ width: "120px", height: "60px" }}
-              />
-            )}
-          </td>
-          <td>
-            {signature?.technicalSignature && (
-              <img
-                src={`http://localhost:5000${signature.technicalSignature}`}
-                alt="Technical Engineer Signature"
-                className="img-thumbnail"
-                style={{ width: "120px", height: "60px" }}
-              />
-            )}
-          </td>
-        </tr>
-      );
-    })
-  ) : (
-    <tr>
-      <td colSpan="10" className="text-center">No defects found.</td>
-    </tr>
-  )}
-</tbody>
-
+        <thead className="thead-dark">
+          <tr>
+            <th>Defect Name</th>
+            <th>Elimination Method</th>
+            <th>Date work was done</th>
+            <th>Performer’s Name</th>
+            <th>Master’s Name</th>
+            <th>QC’s Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {defects.length > 0 ? (
+            defects.map((defect, index) => (
+              <tr key={index}>
+                <td>{defect.defect_name}</td>
+                <td>{defect.elimination_method}</td>
+                <td>{formatDate(defect.date_work_done)}</td> {/* Apply formatting here */}
+                <td>{defect.performer_name}</td>
+                <td>{defect.master_name}</td>
+                <td>{defect.qc_name}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" className="text-center">No defects found.</td>
+            </tr>
+          )}
+        </tbody>
       </table>
   
       {/* Signature Row */}
-      <h3>Signatures</h3>
-      <div className="d-flex justify-content-center mt-3">
-        {signatures.length > 0 ? (
-          signatures.map((signature, index) => (
-            <div key={index} className="mx-3 text-center">
-              {signature.performerSignature && (
-                <div>
-                  <p><strong>Performer’s Signature</strong></p>
-                  <img
-                    src={`http://localhost:5000${signature.performerSignature}`}
-                    alt="Performer Signature"
-                    className="img-thumbnail"
-                    style={{ width: "120px", height: "60px" }}
-                  />
-                </div>
-              )}
-              {signature.masterSignature && (
-                <div>
-                  <p><strong>Master’s Signature</strong></p>
-                  <img
-                    src={`http://localhost:5000${signature.masterSignature}`}
-                    alt="Master Signature"
-                    className="img-thumbnail"
-                    style={{ width: "120px", height: "60px" }}
-                  />
-                </div>
-              )}
-              {signature.qcSignature && (
-                <div>
-                  <p><strong>QC’s Signature</strong></p>
-                  <img
-                    src={`http://localhost:5000${signature.qcSignature}`}
-                    alt="QC Signature"
-                    className="img-thumbnail"
-                    style={{ width: "120px", height: "60px" }}
-                  />
-                </div>
-              )}
-              {signature.technicalSignature && (
-                <div>
-                  <p><strong>Technical Engineer’s Signature</strong></p>
-                  <img
-                    src={`http://localhost:5000${signature.technicalSignature}`}
-                    alt="Technical Engineer Signature"
-                    className="img-thumbnail"
-                    style={{ width: "120px", height: "60px" }}
-                  />
-                </div>
-              )}
-            </div>
-          ))
-        ) : (
-          <p>No signatures found.</p>
+      
+   {/* Signature Row */}
+<h3>Signatures</h3>
+<div className="d-flex justify-content-center mt-3">
+  {signatures.length > 0 ? (
+    signatures.map((signature, index) => (
+      <div key={index} className="mx-3 text-center">
+        {signature.signatureDate && (
+          <p><strong>Signature Date:</strong> {signature.signatureDate}</p>
+        )}
+        {signature.performerSignature && (
+          <div>
+            <p><strong>Performer’s Signature</strong></p>
+            <img
+              src={`http://localhost:5000${signature.performerSignature}`}
+              alt="Performer Signature"
+              className="img-thumbnail"
+              style={{ width: "120px", height: "60px" }}
+            />
+          </div>
+        )}
+        {signature.masterSignature && (
+          <div>
+            <p><strong>Master’s Signature</strong></p>
+            <img
+              src={`http://localhost:5000${signature.masterSignature}`}
+              alt="Master Signature"
+              className="img-thumbnail"
+              style={{ width: "120px", height: "60px" }}
+            />
+          </div>
+        )}
+        {signature.qcSignature && (
+          <div>
+            <p><strong>QC’s Signature</strong></p>
+            <img
+              src={`http://localhost:5000${signature.qcSignature}`}
+              alt="QC Signature"
+              className="img-thumbnail"
+              style={{ width: "120px", height: "60px" }}
+            />
+          </div>
+        )}
+        {signature.technicalSignature && (
+          <div>
+            <p><strong>Technical Engineer’s Signature</strong></p>
+            <img
+              src={`http://localhost:5000${signature.technicalSignature}`}
+              alt="Technical Engineer Signature"
+              className="img-thumbnail"
+              style={{ width: "120px", height: "60px" }}
+            />
+          </div>
         )}
       </div>
+    ))
+  ) : (
+    <p>No signatures found.</p>
+  )}
+</div>
+
   
       {/* Add Defect Register Button */}
       <div className="text-center mt-4">
         <Link to={`/post-defect/${componentId}`} className="btn btn-primary">
-          Add More to Defect Register
+          Add to Defect Register
         </Link>
       </div>
     </div>
