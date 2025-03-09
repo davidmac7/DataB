@@ -1,12 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const Logout = ({ setProfile }) => {
+const Logout = ({ setProfile, setRole }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setProfile(null); // Clear profile state
-    navigate("/"); // Redirect to login
+    setRole(null); // Clear role state
+    navigate("/"); // Redirect to Role selection
   };
 
   return (

@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function R({ profile }) {
+function R({ profile, aircraft }) {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    
-
 
     const fetchComponents = async () => {
       try {
@@ -32,6 +30,7 @@ function R({ profile }) {
   return (
     <div>
       <h2>Components in Category R</h2>
+      <p>Currently selected aircraft: {aircraft?.name}</p>
       {components.length > 0 ? (
         <div className="grid-container">
           {components.map((component, index) => (

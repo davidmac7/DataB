@@ -149,13 +149,11 @@ app.use("/uploads", express.static("uploads")); // Serve images from uploads fol
 
 // API route to handle form submission (Post component)
 app.post("/api/post-component", upload.single("image"), async (req, res) => {
-  const { name, partNumber, serialNumber, comment, status, category } = req.body;
+  const { name, partNumber, serialNumber, comment, status, category, aircraftId } = req.body;
   const imagePath = req.file ? `/uploads/${req.file.filename}` : null; // Get the uploaded image path
 
-  const aircraftProfileId = req.session.aircraftId; // Get the aircraft profile ID from session
-
-  if (!aircraftProfileId) {
-    return res.status(400).json({ error: "No aircraft profile found in session" });
+  if (!aircraftId) {
+    return res.status(400).json({ error: "No aircraft profile found in request" });
   }
 
   try {
@@ -166,7 +164,7 @@ app.post("/api/post-component", upload.single("image"), async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
     `;
-    const values = [name, partNumber, serialNumber, comment, status, category, imagePath, aircraftProfileId];
+    const values = [name, partNumber, serialNumber, comment, status, category, imagePath, aircraftId];
 
     const result = await pool.query(query, values);
     console.log("Post submitted:", result.rows[0]); // Log the submitted post
@@ -177,45 +175,43 @@ app.post("/api/post-component", upload.single("image"), async (req, res) => {
   }
 });
 
+
 // API to get all components in category X for the logged-in aircraft profile
 app.get("/api/get-components/X", async (req, res) => {
-  // console.log("Session Data:", req.session); // Log session to check if aircraftId exists
-  const aircraftProfileId = req.session.aircraftId; // Get aircraft profile ID from session
+  const { aircraftId } = req.query; // Get aircraftId from query parameters
 
-  if (!aircraftProfileId) {
-    return res.status(400).json({ error: "No aircraft profile found in session" });
+  if (!aircraftId) {
+    return res.status(400).json({ error: "No aircraft profile found in session or request" });
   }
 
   try {
     const query = `
       SELECT * FROM components 
-      WHERE category = 'X' AND aircraft_profile_id = $1 
+      WHERE category = 'X' AND aircraft_profile_id = $1
     `;
-    const values = [aircraftProfileId];
+    const values = [aircraftId]; // Use the passed aircraftId in the query
 
     const result = await pool.query(query, values);
 
-    // Append full URL for images
     const components = result.rows.map((component) => ({
       ...component,
       image_url: component.image_path ? `http://localhost:5000${component.image_path}` : null,
     }));
 
-    res.json(components); // Return all components of category X for the logged-in aircraft
-
+    res.json(components); // Return the components for the given aircraftId
   } catch (error) {
     console.error("Error fetching components:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+
 // API to get all components in category R for the logged-in aircraft profile
 app.get("/api/get-components/R", async (req, res) => {
-  // console.log("Session Data:", req.session); // Log session to check if aircraftId exists
-  const aircraftProfileId = req.session.aircraftId; // Get aircraft profile ID from session
+  const { aircraftId } = req.query; // Get aircraftId from query parameters
 
-  if (!aircraftProfileId) {
-    return res.status(400).json({ error: "No aircraft profile found in session" });
+  if (!aircraftId) {
+    return res.status(400).json({ error: "No aircraft profile found in session or request" });
   }
 
   try {
@@ -223,18 +219,16 @@ app.get("/api/get-components/R", async (req, res) => {
       SELECT * FROM components 
       WHERE category = 'R' AND aircraft_profile_id = $1
     `;
-    const values = [aircraftProfileId];
+    const values = [aircraftId]; // Use the passed aircraftId in the query
 
     const result = await pool.query(query, values);
 
-    // Append full URL for images
     const components = result.rows.map((component) => ({
       ...component,
       image_url: component.image_path ? `http://localhost:5000${component.image_path}` : null,
     }));
 
-    res.json(components); // Return all components of category R for the logged-in aircraft
-
+    res.json(components); // Return the components for the given aircraftId
   } catch (error) {
     console.error("Error fetching components:", error);
     res.status(500).json({ error: "Server error" });
@@ -242,31 +236,28 @@ app.get("/api/get-components/R", async (req, res) => {
 });
 
 // API to get all components in category A for the logged-in aircraft profile
-app.get("/api/get-components/A", async (req, res) => {
-  // console.log("Session Data:", req.session); // Log session to check if aircraftId exists
-  const aircraftProfileId = req.session.aircraftId; // Get aircraft profile ID from session
+app.get("/api/get-components/R", async (req, res) => {
+  const { aircraftId } = req.query; // Get aircraftId from query parameters
 
-  if (!aircraftProfileId) {
-    return res.status(400).json({ error: "No aircraft profile found in session" });
+  if (!aircraftId) {
+    return res.status(400).json({ error: "No aircraft profile found in session or request" });
   }
 
   try {
     const query = `
       SELECT * FROM components 
-      WHERE category = 'A' AND aircraft_profile_id = $1
+      WHERE category = 'R' AND aircraft_profile_id = $1
     `;
-    const values = [aircraftProfileId];
+    const values = [aircraftId]; // Use the passed aircraftId in the query
 
     const result = await pool.query(query, values);
 
-    // Append full URL for images
     const components = result.rows.map((component) => ({
       ...component,
       image_url: component.image_path ? `http://localhost:5000${component.image_path}` : null,
     }));
 
-    res.json(components); // Return all components of category A for the logged-in aircraft
-
+    res.json(components); // Return the components for the given aircraftId
   } catch (error) {
     console.error("Error fetching components:", error);
     res.status(500).json({ error: "Server error" });
@@ -535,6 +526,64 @@ app.post('/api/saveDefect', upload.any(), async (req, res) => {
 });
 
 
+app.get("/api/aircraft-profiles", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, name FROM aircraft_profiles");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching aircraft profiles:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
+// Set selected aircraft in session
+app.post("/api/select-aircraft", (req, res) => {
+  const { aircraftId } = req.body;
+  if (!aircraftId) return res.status(400).json({ error: "Aircraft ID required" });
+
+  req.session.selectedAircraft = aircraftId;
+  res.json({ message: "Aircraft selected successfully", aircraftId });
+});
+
+// Get selected aircraft from session
+app.get("/api/selected-aircraft", (req, res) => {
+  if (!req.session.selectedAircraft) {
+    return res.status(404).json({ error: "No aircraft selected" });
+  }
+  res.json({ aircraftId: req.session.selectedAircraft });
+});
+app.get("/api/aircraft-profiles", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT name FROM aircraft_profiles");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching aircraft profiles:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/getRole", async (req, res) => {
+  const { idNumber, password } = req.body;
+
+  try {
+    const result = await pool.query("SELECT role, password FROM roles WHERE id_number = $1", [idNumber]);
+
+    if (result.rows.length > 0) {
+      const { role, password: hashedPassword } = result.rows[0];
+
+      const passwordMatch = await bcrypt.compare(password, hashedPassword);
+      if (passwordMatch) {
+        res.json({ role });
+      } else {
+        res.status(401).json({ message: "Invalid password" });
+      }
+    } else {
+      res.status(404).json({ message: "Role not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching role:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 app.listen(5000, () => console.log("Server running on port 5000"));

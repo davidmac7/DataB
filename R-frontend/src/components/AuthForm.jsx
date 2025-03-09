@@ -47,7 +47,7 @@ function AuthForm({ setProfile }) {
         <div className="text-center">
           <h3>Radio</h3>
           <button className="btn btn-primary m-2" onClick={() => setMode("login")}>
-            Login
+            Select Aircraft
           </button>
           <button className="btn btn-success m-2" onClick={() => setMode("create")}>
             Create Aircraft Profile
@@ -59,7 +59,7 @@ function AuthForm({ setProfile }) {
         <div className="row justify-content-center">
           <div className="col-md-6">
             <div className="card p-4 shadow-lg">
-              <h3 className="text-center mb-4">{mode === "create" ? "Create Aircraft Profile" : "Login"}</h3>
+              <h3 className="text-center mb-4">{mode === "create" ? "Create Aircraft Profile" : ""}</h3>
               <form onSubmit={handleSubmit}>
                 <div className="form-group mb-3">
                   <input

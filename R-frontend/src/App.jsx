@@ -19,6 +19,7 @@ import Home from "./components/Home";
 function App() {
   const [profile, setProfile] = useState(null);
   // console.log("Current Profile:", profile); // Debugging to check profile state
+  const [selectedAircraft, setSelectedAircraft] = useState(null); // Track selected aircraft
 
 
   return (
@@ -31,7 +32,10 @@ function App() {
           {/* Logout Button at top */}
           <Logout setProfile={setProfile} />
 
-            <Navbar profile={profile} /> {/* Pass setProfile to Navbar */}
+
+           {/* Pass setSelectedAircraft to Navbar to update selected aircraft */}
+           <Navbar profile={profile} setSelectedAircraft={setSelectedAircraft} />
+
 
             <Routes>
             <Route path="/" element={<Home profile={profile} />} />
@@ -43,7 +47,15 @@ function App() {
               <Route path="/post-defect/:componentId" element={<PostDefect />} />
               <Route path="/view-defect/:componentId" element={<ViewDefect />} />
             </Routes>
-
+ {/* Render Sections Based on Selected Aircraft */}
+ {selectedAircraft && (
+              <div>
+                <X aircraft={selectedAircraft} />
+                <R aircraft={selectedAircraft} />
+                <A aircraft={selectedAircraft} />
+              </div>
+            )}
+        
           
           
           </>

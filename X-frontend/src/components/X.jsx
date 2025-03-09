@@ -12,6 +12,9 @@ function X({ profile }) {
     const fetchComponents = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/get-components/X", {
+          params: {
+            aircraftId: profile.aircraftId, // Include the aircraftId in the request
+          },
           withCredentials: true,
         });
 
@@ -26,14 +29,16 @@ function X({ profile }) {
     };
 
     fetchComponents();
-  }, []);
+  }, [profile.aircraftId]); // Ensure it triggers when aircraftId changes
 
   const handleViewDefect = (componentId) => {
     navigate(`/view-defect/${componentId}`);
   };
+
   const handleAddDefect = (componentId) => {
     navigate(`/post-defect/${componentId}`);
   };
+
   if (loading) return <p>Loading components...</p>;
   if (error) return <p>{error}</p>;
 
@@ -52,7 +57,6 @@ function X({ profile }) {
               {component.image_url && (
                 <img src={component.image_url} alt="Component" width="200" height="200" />
               )}
-              {/* View Defect Button */}
               <button onClick={() => handleViewDefect(component.id)}>View Defect</button>
               <button onClick={() => handleAddDefect(component.id)}>Add Defect Register</button>
             </div>

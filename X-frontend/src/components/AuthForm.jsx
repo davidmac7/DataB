@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
-function AuthForm({ setProfile }) {
+function AuthForm({ setProfile, role  }) {
   const [mode, setMode] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -45,13 +45,17 @@ function AuthForm({ setProfile }) {
     <div className="container mt-5">
       {!mode && (
         <div className="text-center">
-          <h3>Avionics</h3>
+         
           <button className="btn btn-primary m-2" onClick={() => setMode("login")}>
-            Login
+            Enter Aicraft
           </button>
-          <button className="btn btn-success m-2" onClick={() => setMode("create")}>
-            Create Aircraft Profile
-          </button>
+          {/* Show "Create Aircraft Profile" button only if role === "Admin" */}
+          {role === "Admin" && (
+            <button className="btn btn-success m-2" onClick={() => setMode("create")}>
+              Create Aircraft Profile
+            </button>
+          )}
+
         </div>
       )}
 
@@ -59,7 +63,7 @@ function AuthForm({ setProfile }) {
         <div className="row justify-content-center">
           <div className="col-md-6">
             <div className="card p-4 shadow-lg">
-              <h3 className="text-center mb-4">{mode === "create" ? "Create Aircraft Profile" : "Login"}</h3>
+              <h3 className="text-center mb-4">{mode === "create" ? "Create Aircraft Profile" : "Enter Aircraft name"}</h3>
               <form onSubmit={handleSubmit}>
                 <div className="form-group mb-3">
                   <input

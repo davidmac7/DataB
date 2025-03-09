@@ -70,3 +70,14 @@ FOREIGN KEY (defect_id) REFERENCES defects(defect_id) ON DELETE CASCADE;
 ALTER TABLE signatures ADD COLUMN signature_date DATE;
 
 DELETE FROM defects WHERE id IN (1, 2, 3);
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    id_number VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL, -- Store hashed password
+    role VARCHAR(50) NOT NULL CHECK (role IN ('X', 'R', 'A', 'Admin')), -- Define valid roles
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Optionally, create an index for id_number to speed up searches
+CREATE INDEX idx_id_number ON roles (id_number);
