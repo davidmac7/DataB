@@ -51,16 +51,16 @@ const getSignatureFile = (filePath) => {
 
 
 // Create signatures table if not exists
-pool.query(`
-  CREATE TABLE IF NOT EXISTS signatures (
-    id SERIAL PRIMARY KEY,
-    component_id INT NOT NULL,
-    performer_signature_path TEXT NOT NULL,
-    master_signature_path TEXT NOT NULL,
-    qc_signature_path TEXT NOT NULL,
-    technical_signature_path TEXT NOT NULL
-  );
-`);
+// pool.query(`
+//   CREATE TABLE IF NOT EXISTS signatures (
+//     id SERIAL PRIMARY KEY,
+//     component_id INT NOT NULL,
+//     performer_signature_path TEXT NOT NULL,
+//     master_signature_path TEXT NOT NULL,
+//     qc_signature_path TEXT NOT NULL,
+//     technical_signature_path TEXT NOT NULL
+//   );
+// `);
 
 // API to handle signature uploads
 router.post(
@@ -69,51 +69,88 @@ router.post(
     { name: "performerSignature", maxCount: 1 },
     { name: "masterSignature", maxCount: 1 },
     { name: "qcSignature", maxCount: 1 },
-    { name: "technicalSignature", maxCount: 1 }, // FIXED: Corrected field name
+    { name: "technicalSignature", maxCount: 1 },
   ]),
   async (req, res) => {
-    try {
-      const { componentId, signatureDate } = req.body;
+    const { componentId, signatureDate, defects } = req.body;
 
-      if (!componentId) {
-        return res.status(400).json({ error: "Component ID is required" });
+    if (!componentId) {
+      return res.status(400).json({ error: "Component ID is required" });
+    }
+
+    try {
+      const parsedDefects = JSON.parse(defects); // Parse defects if sent as JSON string
+
+      if (!Array.isArray(parsedDefects)) {
+        return res.status(400).json({ error: "Defects data must be an array" });
       }
 
-      const performerSignaturePath = req.files["performerSignature"]
-        ? `signatures/${req.files["performerSignature"][0].filename}`
-        : null;
-      const masterSignaturePath = req.files["masterSignature"]
-        ? `signatures/${req.files["masterSignature"][0].filename}`
-        : null;
-      const qcSignaturePath = req.files["qcSignature"]
-        ? `signatures/${req.files["qcSignature"][0].filename}`
-        : null;
-      const technicalSignaturePath = req.files["technicalSignature"]
-        ? `signatures/${req.files["technicalSignature"][0].filename}`
-        : null;
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN"); // Start transaction
 
-      // Insert signature paths into the database
-      const result = await pool.query(
-        `INSERT INTO signatures (component_id, performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path, signature_date)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-         
-        [
-          componentId,
-          performerSignaturePath,
-          masterSignaturePath,
-          qcSignaturePath,
-          technicalSignaturePath,
-          signatureDate
-        ]
-      );
+        for (let defect of parsedDefects) {
+          if (!defect.defectName || !defect.workDate) {
+            return res.status(400).json({ error: "Defect name and work date are required" });
+          }
 
-      res.json({ message: "Signatures saved successfully!", data: result.rows[0] });
+          const workDate = defect.workDate.trim() !== "" ? defect.workDate : new Date().toISOString().split('T')[0];
+
+          // Insert defect into `defects` table
+          const defectResult = await client.query(
+            `INSERT INTO defects (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *;`,
+            [
+              componentId,
+              defect.defectName,
+              defect.eliminationMethod,
+              workDate,
+              defect.performerName,
+              defect.masterName,
+              defect.qcName,
+            ]
+          );
+
+          const savedDefect = defectResult.rows[0];
+
+          // Insert the same data into `signatures` table along with file paths
+          await client.query(
+            `INSERT INTO signaturesz (component_id, defect_name, elimination_method, date_work_done, performer_name, master_name, qc_name,  
+              performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`,
+            [
+              componentId,
+              savedDefect.defect_name,
+              savedDefect.elimination_method,
+              savedDefect.date_work_done,
+              savedDefect.performer_name,
+              savedDefect.master_name,
+              savedDefect.qc_name,
+              req.files["performerSignature"] ? `signatures/${req.files["performerSignature"][0].filename}` : null,
+              req.files["masterSignature"] ? `signatures/${req.files["masterSignature"][0].filename}` : null,
+              req.files["qcSignature"] ? `signatures/${req.files["qcSignature"][0].filename}` : null,
+              req.files["technicalSignature"] ? `signatures/${req.files["technicalSignature"][0].filename}` : null,
+              
+            ]
+          );
+        }
+
+        await client.query("COMMIT"); // Commit transaction
+        res.status(200).json({ message: "Defects and signatures saved successfully!" });
+      } catch (error) {
+        await client.query("ROLLBACK"); // Rollback on error
+        console.error("Error saving defects and signatures:", error);
+        res.status(500).json({ error: "Failed to save defects and signatures" });
+      } finally {
+        client.release();
+      }
     } catch (error) {
-      console.error("Error saving signatures:", error);
-      res.status(500).json({ error: "Failed to save signatures" });
+      console.error("Error parsing defects:", error);
+      res.status(400).json({ error: "Invalid defects data" });
     }
   }
 );
+
 
 const formatDate = (date) => {
   if (!date) return null;
@@ -131,9 +168,10 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
 
   try {
     const query = `
-      SELECT performer_signature_path, master_signature_path, qc_signature_path, 
-             technical_signature_path, signature_date
-      FROM signatures
+      SELECT id, component_id, defect_name, elimination_method, date_work_done, 
+             performer_name, master_name, qc_name, 
+             performer_signature_path, master_signature_path, qc_signature_path, technical_signature_path
+      FROM signaturesz
       WHERE component_id = $1;
     `;
 
@@ -146,13 +184,19 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
       return res.status(404).json({ message: "No signatures found" });
     }
 
-    // Extract signature file paths along with signature_date
+    // Map the data correctly, including all necessary fields
     const signatureData = result.rows.map((row) => ({
+      id: row.id, // Include the primary key
+      defectName: row.defect_name,
+      eliminationMethod: row.elimination_method,
+      dateWorkDone: row.date_work_done ? new Date(row.date_work_done).toLocaleDateString() : 'N/A',
+      performerName: row.performer_name,
+      masterName: row.master_name,
+      qcName: row.qc_name,
       performerSignature: getSignatureFile(row.performer_signature_path),
       masterSignature: getSignatureFile(row.master_signature_path),
       qcSignature: getSignatureFile(row.qc_signature_path),
       technicalSignature: getSignatureFile(row.technical_signature_path),
-      signatureDate: formatDate (row.signature_date), // Include signature_date in response
     }));
 
     console.log("Formatted signature data:", signatureData); // Log the final output
@@ -162,6 +206,41 @@ router.get("/api/viewSignatures/:componentId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
+
+// DELETE endpoint to remove a defect from the signaturesz table
+router.delete("/api/deleteDefect/:defectId", async (req, res) => {
+  const { defectId } = req.params;
+
+  try {
+    const client = await pool.connect();
+    try {
+      // Delete the defect record from the signaturesz table
+      const deleteQuery = `
+        DELETE
+        FROM signaturesz WHERE id = $1 RETURNING *;
+      `;
+      const result = await client.query(deleteQuery, [defectId]);
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Defect not found" });
+      }
+
+      // Send success response
+      res.status(200).json({ message: "Defect deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting defect:", error);
+      res.status(500).json({ error: "Failed to delete defect" });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error handling request:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 
 export default router;

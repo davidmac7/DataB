@@ -1,194 +1,204 @@
-import React, { useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import SignaturePad from "react-signature-canvas";
+import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
-const PostDefect = () => {
-  const { componentId } = useParams();
-  const navigate = useNavigate();
+function PostForm({ profile }) {
+
+  const [formData, setFormData] = useState({
+    name: "",
+    partNumber: "",
+    serialNumber: "",
+    comment: "",
+    status: "functioning", // default status
+    category: "R", // ✅ Ensures X is the default value
+    image: null,
+    doc: null, // ✅ Added document field
+  });
+
+  // Handle changes in form input fields
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Handle image file upload
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData((prevData) => ({
+      ...prevData,
+      image: file,
+    }));
+  };
   
-  const [signatureDate, setSignatureDate] = useState(""); // Added state for the date
-
-  const [defects, setDefects] = useState(
-    Array.from({ length: 5 }, () => ({
-      defectName: "",
-      eliminationMethod: "",
-      workDate: "",
-      performerName: "",
-      masterName: "",
-      qcName: "",
-    }))
-  );
-
-  const performerRef = useRef(null);
-  const masterRef = useRef(null);
-  const qcRef = useRef(null);
-  const technicalRef = useRef(null);
-
-  const handleInputChange = (index, field, value) => {
-    const newDefects = [...defects];
-    newDefects[index][field] = value;
-    setDefects(newDefects);
+   // ✅ Handle document file upload (only .doc, .docx, .pdf)
+   const handleDocChange = (e) => {
+    const file = e.target.files[0];
+    if (file && !["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
+      alert("Only .doc, .docx, and .pdf files are allowed.");
+      return;
+    }
+    setFormData((prevData) => ({
+      ...prevData,
+      doc: file,
+    }));
   };
 
-  // Function to dynamically resize textarea
-const autoResize = (event) => {
-  event.target.style.height = "auto";
-  event.target.style.height = event.target.scrollHeight + "px";
-};
+  useEffect(() => {
+    console.log("Received Profile in PostForm:", profile);
+  }, [profile]);
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!profile || !profile.aircraftId) {
+      console.error("No aircraft profile found in session");
+      return;
+    }
 
-  const handleSubmit = async () => {
+    const formDataToSend = new FormData();
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("partNumber", formData.partNumber);
+    formDataToSend.append("serialNumber", formData.serialNumber);
+    formDataToSend.append("comment", formData.comment);
+    formDataToSend.append("status", formData.status);
+    formDataToSend.append("category", formData.category); // Send category to database
+    formDataToSend.append("image", formData.image); // Attach image file
+    formDataToSend.append("doc", formData.doc); // ✅ Attach document file
+    formDataToSend.append("aircraftId", profile.aircraftId);
+
     try {
-      // Submit defects
-      const validDefects = defects.filter(
-        (defect) =>
-          defect.defectName.trim() !== "" &&
-          defect.workDate.trim() !== "" &&
-          defect.performerName.trim() !== "" &&
-          defect.masterName.trim() !== "" &&
-          defect.qcName.trim() !== ""
-      );
-
-      await axios.post("http://localhost:5000/api/saveDefect", {
-        componentId,
-        defects: validDefects,
+      // Send form data to the backend (API route for submitting post)
+      const res = await axios.post("http://localhost:5000/api/post-component", formDataToSend, {
+        withCredentials: true,  // Ensure cookies (session) are sent with the request
+        headers: {
+          "Content-Type": "multipart/form-data", // Important for file uploads
+        },
       });
-
-      // Submit signatures
-      const formData = new FormData();
-      formData.append("componentId", componentId);
-      formData.append("signatureDate", signatureDate); // Append signature date
-
-      const addSignature = (ref, fieldName) => {
-        if (ref.current && !ref.current.isEmpty()) {
-          formData.append(fieldName, dataURLtoBlob(ref.current.toDataURL()));
-        }
-      };
-
-      addSignature(performerRef, "performerSignature");
-      addSignature(masterRef, "masterSignature");
-      addSignature(qcRef, "qcSignature");
-      addSignature(technicalRef, "technicalSignature");
-
-      await axios.post("http://localhost:5000/api/saveSignatures", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      console.log("Post submitted:", res.data);
+      // Optionally clear the form after submission
+      setFormData({
+        name: "",
+        partNumber: "",
+        serialNumber: "",
+        comment: "",
+        status: "functioning",
+        category: "R",
+        image: null,
+        doc: null, // ✅ Clear document field
       });
-
-      // Save submission state
-      const savedState = JSON.parse(localStorage.getItem("defectSubmitted")) || {};
-      savedState[componentId] = true;
-      localStorage.setItem("defectSubmitted", JSON.stringify(savedState));
-
-      alert("Defects and signatures saved successfully!");
-      navigate("/");
     } catch (error) {
-      console.error("Error submitting data:", error);
-      alert("Failed to save defects and signatures.");
+      console.error("Error submitting post:", error.response?.data || error.message);
     }
-  };
-
-  const clearSignature = (ref) => {
-    if (ref.current) ref.current.clear();
-  };
-
-  const dataURLtoBlob = (dataURL) => {
-    const byteString = atob(dataURL.split(",")[1]);
-    const mimeString = dataURL.split(",")[0].split(":")[1].split(";")[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([ab], { type: mimeString });
   };
 
   return (
-    <div className="container mt-4">
-      <h1 className="mb-3">Add the Defect Register</h1>
-      <p>Defect register for component ID: {componentId}</p>
+    <div className="container mt-5">
+      <h2>Create Component Post</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group mb-3">
+          <input
+            type="text"
+            name="name"
+            className="form-control"
+            placeholder="Name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-      <table className="table table-bordered">
-        <thead className="thead-dark">
-          <tr>
-            <th>Defect Name</th>
-            <th>Elimination Method</th>
-            <th>Date work was done</th>
-            <th>Performer’s Name</th>
-            <th>Master’s Name</th>
-            <th>QC’s Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {defects.map((defect, index) => (
-            <tr key={index}>
-               {/* Expanding Textarea Fields */}
-            <td>
-              <textarea
-                className="form-control"
-                value={defect.defectName}
-                onChange={(e) => handleInputChange(index, "defectName", e.target.value)}
-                onInput={autoResize} // Resize on input
-                rows="1"
-                style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
-              />
-            </td>
-            <td>
-              <textarea
-                className="form-control"
-                value={defect.eliminationMethod}
-                onChange={(e) => handleInputChange(index, "eliminationMethod", e.target.value)}
-                onInput={autoResize}
-                rows="1"
-                style={{ overflow: "hidden", resize: "none" }}
-              />
-            </td>
- {/* Regular Input Fields */}
-             
-              <td><input type="date" className="form-control" value={defect.workDate} onChange={(e) => handleInputChange(index, "workDate", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.performerName} onChange={(e) => handleInputChange(index, "performerName", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.masterName} onChange={(e) => handleInputChange(index, "masterName", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.qcName} onChange={(e) => handleInputChange(index, "qcName", e.target.value)} /></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className="form-group mb-3">
+          <input
+            type="text"
+            name="partNumber"
+            className="form-control"
+            placeholder="Part Number"
+            value={formData.partNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-      <h3>Signatures</h3>
-       {/* Added row for selecting date before signatures */}
-       <div className="mb-3">
-        <label>Select Date:</label>
-        <input
-          type="date"
-          className="form-control"
-          value={signatureDate}
-          onChange={(e) => setSignatureDate(e.target.value)}
-        />
-      </div>
-      <table className="table table-bordered">
-        <thead className="thead-dark">
-          <tr>
-            <th>Performer’s Signature</th>
-            <th>Master’s Signature</th>
-            <th>QC’s Signature</th>
-            <th>Technical Engineer’s Signature</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {[performerRef, masterRef, qcRef, technicalRef].map((ref, index) => (
-              <td key={index}>
-                <SignaturePad ref={ref} canvasProps={{ className: "signature-pad" }} />
-                <button onClick={() => clearSignature(ref)}>Clear</button>
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+        <div className="form-group mb-3">
+          <input
+            type="text"
+            name="serialNumber"
+            className="form-control"
+            placeholder="Serial Number"
+            value={formData.serialNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-      <button className="btn btn-primary w-100" onClick={handleSubmit}>Submit</button>
+        <div className="form-group mb-3">
+          <textarea
+            name="comment"
+            className="form-control"
+            placeholder="Comment"
+            value={formData.comment}
+            onChange={handleChange}
+            required
+          ></textarea>
+        </div>
+
+        <div className="form-group mb-3">
+        <label>Status</label>
+          <select
+            name="status"
+            className="form-control"
+            value={formData.status}
+            onChange={handleChange}
+            required
+          >
+            <option value="functioning">Functioning</option>
+            <option value="non-functioning">Non-functioning</option>
+          </select>
+        </div>
+ {/* Category Dropdown */}
+ <div className="form-group mb-3" style={{ display: "none" }}>
+          <label>Category</label>
+          <select
+            name="category"
+            className="form-control"
+            value={formData.category}
+            onChange={handleChange}
+            required
+          >
+            
+            <option value="R">R</option>
+            
+          </select>
+        </div>
+        <div className="form-group mb-3">
+        <label>Attatch image</label>
+          <input
+            type="file"
+            name="image"
+            className="form-control"
+            accept=".jpg, .jpeg, .png"
+            onChange={handleFileChange}
+          />
+        </div>
+ {/* ✅ Attach Document Button */}
+ <div className="form-group mb-3">
+          <label>Attach Doc (PDF, Word)</label>
+          <input
+            type="file"
+            name="doc"
+            className="form-control"
+            accept=".pdf, .doc, .docx"
+            onChange={handleDocChange}
+          />
+        </div>
+        <button type="submit" className="btn btn-primary">
+          Submit
+        </button>
+      </form>
     </div>
   );
-};
+}
 
-export default PostDefect;
+export default PostForm;

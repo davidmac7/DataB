@@ -236,7 +236,7 @@ app.get("/api/get-components/R", async (req, res) => {
 });
 
 // API to get all components in category A for the logged-in aircraft profile
-app.get("/api/get-components/R", async (req, res) => {
+app.get("/api/get-components/A", async (req, res) => {
   const { aircraftId } = req.query; // Get aircraftId from query parameters
 
   if (!aircraftId) {
@@ -246,7 +246,7 @@ app.get("/api/get-components/R", async (req, res) => {
   try {
     const query = `
       SELECT * FROM components 
-      WHERE category = 'R' AND aircraft_profile_id = $1
+      WHERE category = 'A' AND aircraft_profile_id = $1
     `;
     const values = [aircraftId]; // Use the passed aircraftId in the query
 
@@ -470,60 +470,6 @@ app.post("/uploads", upload.single("file"), async (req, res) => {
 });
 
 
-
-
-app.post('/api/saveDefect', upload.any(), async (req, res) => {
-  try {
-    console.log("Request Body:", req.body); // Log request body for debugging
-
-    const { componentId, defects } = req.body;
-
-    if (!defects) {
-      return res.status(400).json({ error: 'Defects data is missing or invalid.' });
-    }
-
-    let parsedDefects;
-    try {
-      parsedDefects = JSON.parse(defects); // Deserialize defects data
-    } catch (error) {
-      return res.status(400).json({ error: 'Failed to parse defects data' });
-    }
-
-    if (!Array.isArray(parsedDefects)) {
-      return res.status(400).json({ error: 'Defects data is not an array' });
-    }
-
-    console.log("Parsed Defects:", parsedDefects);
-
-    const client = await pool.connect();
-
-    for (let defect of parsedDefects) {
-      if (!defect.defectId) {
-        return res.status(400).json({ error: 'Each defect entry must have a defectId' });
-      }
-
-      await client.query(
-        `INSERT INTO defectz (defect_id, component_id, defect_name, elimination_method, work_date, performer_name, signature_path, file_path) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          defect.defectId, // Ensure defectId is passed and stored
-          componentId,
-          defect.defectName,
-          defect.eliminationMethod,
-          defect.workDate,
-          defect.performerName,
-          req.files.find(file => file.fieldname === `performerSignature${defect.defectId}`)?.path || null,
-          req.files.find(file => file.fieldname === 'file')?.path || null,
-        ]
-      );
-    }
-
-    res.status(200).json({ message: 'Defects, signatures, and documents saved successfully!' });
-  } catch (error) {
-    console.error('Error saving defect data:', error);
-    res.status(500).json({ error: 'Failed to save defect data' });
-  }
-});
 
 
 app.get("/api/aircraft-profiles", async (req, res) => {

@@ -81,3 +81,20 @@ CREATE TABLE roles (
 
 -- Optionally, create an index for id_number to speed up searches
 CREATE INDEX idx_id_number ON roles (id_number);
+
+CREATE TABLE signaturesz (
+    id SERIAL PRIMARY KEY,
+    component_id INT NOT NULL,
+    defect_name TEXT NOT NULL,
+    elimination_method TEXT NOT NULL,
+    date_work_done DATE NOT NULL,
+    performer_name TEXT NOT NULL,
+    master_name TEXT NOT NULL,
+    qc_name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    performer_signature_path TEXT,
+    master_signature_path TEXT,
+    qc_signature_path TEXT,
+    technical_signature_path TEXT,
+    FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE CASCADE
+);

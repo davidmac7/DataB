@@ -3,9 +3,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
-
-function Navbar({ profile }) {
-
+function Navbar({ profile, role }) {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
@@ -14,27 +12,55 @@ function Navbar({ profile }) {
       navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };
+
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       handleSearch();
     }
   };
 
+  // Conditionally render discover dropdown items based on the user's role
+  const renderDiscoverCategories = () => {
+    const categories = [];
+    
+    if (role === "Admin") {
+      categories.push("X", "R", "A"); // Admin sees all categories
+    } else if (role === "X") {
+      categories.push("X");
+    } else if (role === "R") {
+      categories.push("R");
+    } else if (role === "A") {
+      categories.push("A");
+    }
+
+    
+    return categories.map((category) => (
+      <li key={category}>
+        <Link className="dropdown-item" to={`/discover/${category}`}>
+          {category}
+        </Link>
+      </li>
+    ));
+  };
+
   return (
-   
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container">
         <Link className="navbar-brand" to="/">
           {profile ? `Aircraft: ${profile.name}` : "Aircraft"}
         </Link>
 
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="mx-auto">
-            <ul className="navbar-nav d-flex justify-content-center">
-
+          <ul className="navbar-nav d-flex justify-content-center">
             <li className="nav-item dropdown">
               <Link
                 className="nav-link dropdown-toggle"
@@ -44,19 +70,19 @@ function Navbar({ profile }) {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Discover
+                Categories
               </Link>
               <ul className="dropdown-menu" aria-labelledby="discoverDropdown">
-                <li><Link className="dropdown-item" to="/discover/X">X</Link></li>
-                <li><Link className="dropdown-item" to="/discover/R">R</Link></li>
-                <li><Link className="dropdown-item" to="/discover/A">A</Link></li>
+                {renderDiscoverCategories()}
               </ul>
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link" to="/post">Post</Link> {/* ✅ This will navigate to PostForm */}
+              <Link className="nav-link" to="/post">
+                Post
+              </Link>
             </li>
-            
+
             <li className="nav-item">
               <div className="input-group">
                 <input
@@ -64,7 +90,7 @@ function Navbar({ profile }) {
                   placeholder="Search Name or Part Number"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}  
+                  onKeyDown={handleKeyDown}
                   className="search-input"
                 />
                 <button onClick={handleSearch} className="search-btn">
@@ -72,13 +98,10 @@ function Navbar({ profile }) {
                 </button>
               </div>
             </li>
-           
           </ul>
         </div>
-
       </div>
     </nav>
-    
   );
 }
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 
-function SearchResults({ profile }) {
+function SearchResults({ profile, role }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,11 +11,27 @@ function SearchResults({ profile }) {
 
   useEffect(() => {
     const fetchResults = async () => {
+      if (!role || !profile || !profile.aircraftId) {
+        setError("Invalid profile data");
+        setLoading(false);
+        return;
+      }
+      console.log("Role:", role); // Log the role for debugging
+
+      // Define the base API URL dynamically based on role
+      const rolePaths = {
+        Admin: "api/search",
+        X: "api/X/search",
+        R: "api/R/search",
+        A: "api/A/search",
+      };
+
+      const rolePath = rolePaths[role] || "api/search"; // Default to Admin if role is unknown
+      const apiUrl = `http://localhost:5000/${rolePath}?query=${query}&aircraftId=${profile.aircraftId}`;
+
       try {
-        const response = await axios.get(
-          `http://localhost:5000/api/search?query=${query}&aircraftId=${profile.aircraftId}`,
-          { withCredentials: true }
-        );
+        console.log("Fetching from URL:", apiUrl); // Log the API URL for debugging
+        const response = await axios.get(apiUrl, { withCredentials: true });
         setResults(response.data);
       } catch (err) {
         setError("Error fetching search results");
@@ -25,7 +41,7 @@ function SearchResults({ profile }) {
     };
 
     if (query) fetchResults();
-  }, [query, profile.aircraftId]);
+  }, [query,profile, profile.aircraftId, role]); // Re-fetch results when query, profile, or role changes
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -47,8 +63,7 @@ function SearchResults({ profile }) {
               ) : (
                 <p>No Image Available</p>
               )}
-
-
+              
             </div>
           ))
         ) : (

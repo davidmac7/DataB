@@ -7,8 +7,6 @@ import SignaturePad from "react-signature-canvas";
 const PostDefect = () => {
   const { componentId } = useParams();
   const navigate = useNavigate();
-  
-  const [signatureDate, setSignatureDate] = useState(""); // Added state for the date
 
   const [defects, setDefects] = useState(
     Array.from({ length: 5 }, () => ({
@@ -32,15 +30,13 @@ const PostDefect = () => {
     setDefects(newDefects);
   };
 
-  // Function to dynamically resize textarea
-const autoResize = (event) => {
-  event.target.style.height = "auto";
-  event.target.style.height = event.target.scrollHeight + "px";
-};
+  const autoResize = (event) => {
+    event.target.style.height = "auto";
+    event.target.style.height = event.target.scrollHeight + "px";
+  };
 
   const handleSubmit = async () => {
     try {
-      // Submit defects
       const validDefects = defects.filter(
         (defect) =>
           defect.defectName.trim() !== "" &&
@@ -50,15 +46,9 @@ const autoResize = (event) => {
           defect.qcName.trim() !== ""
       );
 
-      await axios.post("http://localhost:5000/api/saveDefect", {
-        componentId,
-        defects: validDefects,
-      });
-
-      // Submit signatures
       const formData = new FormData();
       formData.append("componentId", componentId);
-      formData.append("signatureDate", signatureDate); // Append signature date
+      formData.append("defects", JSON.stringify(validDefects));
 
       const addSignature = (ref, fieldName) => {
         if (ref.current && !ref.current.isEmpty()) {
@@ -75,13 +65,14 @@ const autoResize = (event) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Save submission state
-      const savedState = JSON.parse(localStorage.getItem("defectSubmitted")) || {};
-      savedState[componentId] = true;
-      localStorage.setItem("defectSubmitted", JSON.stringify(savedState));
+      localStorage.setItem(
+        "defectSubmitted",
+        JSON.stringify({ ...JSON.parse(localStorage.getItem("defectSubmitted") || "{}"), [componentId]: true })
+      );
 
       alert("Defects and signatures saved successfully!");
-      navigate("/");
+      // Navigate back to the previous page
+      navigate(-1); // Goes back to the previous page in the history
     } catch (error) {
       console.error("Error submitting data:", error);
       alert("Failed to save defects and signatures.");
@@ -122,49 +113,64 @@ const autoResize = (event) => {
         <tbody>
           {defects.map((defect, index) => (
             <tr key={index}>
-               {/* Expanding Textarea Fields */}
-            <td>
-              <textarea
-                className="form-control"
-                value={defect.defectName}
-                onChange={(e) => handleInputChange(index, "defectName", e.target.value)}
-                onInput={autoResize} // Resize on input
-                rows="1"
-                style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
-              />
-            </td>
-            <td>
-              <textarea
-                className="form-control"
-                value={defect.eliminationMethod}
-                onChange={(e) => handleInputChange(index, "eliminationMethod", e.target.value)}
-                onInput={autoResize}
-                rows="1"
-                style={{ overflow: "hidden", resize: "none" }}
-              />
-            </td>
- {/* Regular Input Fields */}
-             
-              <td><input type="date" className="form-control" value={defect.workDate} onChange={(e) => handleInputChange(index, "workDate", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.performerName} onChange={(e) => handleInputChange(index, "performerName", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.masterName} onChange={(e) => handleInputChange(index, "masterName", e.target.value)} /></td>
-              <td><input type="text" className="form-control" value={defect.qcName} onChange={(e) => handleInputChange(index, "qcName", e.target.value)} /></td>
+              <td>
+                <textarea
+                  className="form-control"
+                  value={defect.defectName}
+                  onChange={(e) => handleInputChange(index, "defectName", e.target.value)}
+                  onInput={autoResize}
+                  rows="1"
+                  style={{ overflow: "hidden", resize: "none" }}
+                />
+              </td>
+              <td>
+                <textarea
+                  className="form-control"
+                  value={defect.eliminationMethod}
+                  onChange={(e) => handleInputChange(index, "eliminationMethod", e.target.value)}
+                  onInput={autoResize}
+                  rows="1"
+                  style={{ overflow: "hidden", resize: "none" }}
+                />
+              </td>
+              <td>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={defect.workDate}
+                  onChange={(e) => handleInputChange(index, "workDate", e.target.value)}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={defect.performerName}
+                  onChange={(e) => handleInputChange(index, "performerName", e.target.value)}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={defect.masterName}
+                  onChange={(e) => handleInputChange(index, "masterName", e.target.value)}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={defect.qcName}
+                  onChange={(e) => handleInputChange(index, "qcName", e.target.value)}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
       <h3>Signatures</h3>
-       {/* Added row for selecting date before signatures */}
-       <div className="mb-3">
-        <label>Select Date:</label>
-        <input
-          type="date"
-          className="form-control"
-          value={signatureDate}
-          onChange={(e) => setSignatureDate(e.target.value)}
-        />
-      </div>
       <table className="table table-bordered">
         <thead className="thead-dark">
           <tr>
@@ -186,7 +192,9 @@ const autoResize = (event) => {
         </tbody>
       </table>
 
-      <button className="btn btn-primary w-100" onClick={handleSubmit}>Submit</button>
+      <button className="btn btn-primary w-100" onClick={handleSubmit}>
+        Submit
+      </button>
     </div>
   );
 };

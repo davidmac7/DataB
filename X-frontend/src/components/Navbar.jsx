@@ -70,7 +70,7 @@ function Navbar({ profile, role }) {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Discover
+                Categories
               </Link>
               <ul className="dropdown-menu" aria-labelledby="discoverDropdown">
                 {renderDiscoverCategories()}

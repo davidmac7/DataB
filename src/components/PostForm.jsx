@@ -2,18 +2,34 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
-function PostForm({ profile }) {
+function PostForm({ profile, role }) {
 
   const [formData, setFormData] = useState({
     name: "",
     partNumber: "",
     serialNumber: "",
     comment: "",
-    status: "functioning", // default status
-    category: "X", // ✅ Ensures X is the default value
+    status: "", // default status
+    category: "", // 
     image: null,
     doc: null, // ✅ Added document field
   });
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const roleCategories = [];
+    if (role === "Admin") {
+      roleCategories.push("X", "R", "A");
+    } else if (role === "X") {
+      roleCategories.push("X");
+    } else if (role === "R") {
+      roleCategories.push("R");
+    } else if (role === "A") {
+      roleCategories.push("A");
+    }
+    setCategories(roleCategories);
+  }, [role]);
 
   // Handle changes in form input fields
   const handleChange = (e) => {
@@ -83,8 +99,8 @@ function PostForm({ profile }) {
         partNumber: "",
         serialNumber: "",
         comment: "",
-        status: "functioning",
-        category: "X",
+        status: "",
+        category: "",
         image: null,
         doc: null, // ✅ Clear document field
       });
@@ -98,104 +114,45 @@ function PostForm({ profile }) {
       <h2>Create Component Post</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group mb-3">
-          <input
-            type="text"
-            name="name"
-            className="form-control"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name} onChange={handleChange} required />
         </div>
-
         <div className="form-group mb-3">
-          <input
-            type="text"
-            name="partNumber"
-            className="form-control"
-            placeholder="Part Number"
-            value={formData.partNumber}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="partNumber" className="form-control" placeholder="Part Number" value={formData.partNumber} onChange={handleChange} required />
         </div>
-
         <div className="form-group mb-3">
-          <input
-            type="text"
-            name="serialNumber"
-            className="form-control"
-            placeholder="Serial Number"
-            value={formData.serialNumber}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="serialNumber" className="form-control" placeholder="Serial Number" value={formData.serialNumber} onChange={handleChange} required />
         </div>
-
         <div className="form-group mb-3">
-          <textarea
-            name="comment"
-            className="form-control"
-            placeholder="Comment"
-            value={formData.comment}
-            onChange={handleChange}
-            required
-          ></textarea>
+          <textarea name="comment" className="form-control" placeholder="Comment" value={formData.comment} onChange={handleChange} required></textarea>
         </div>
-
         <div className="form-group mb-3">
-        <label>Status</label>
-          <select
-            name="status"
-            className="form-control"
-            value={formData.status}
-            onChange={handleChange}
-            required
-          >
+          <label>Status</label>
+          <select name="status" className="form-control" value={formData.status} onChange={handleChange} required>
+            <option value="">Select Status</option>
             <option value="functioning">Functioning</option>
             <option value="non-functioning">Non-functioning</option>
           </select>
         </div>
- {/* Category Dropdown */}
- <div className="form-group mb-3">
+        <div className="form-group mb-3">
           <label>Category</label>
-          <select
-            name="category"
-            className="form-control"
-            value={formData.category}
-            onChange={handleChange}
-            required
-          >
-            <option value="X">X</option>
-            <option value="R">R</option>
-            <option value="A">A</option>
+          <select name="category" className="form-control" value={formData.category} onChange={handleChange} required>
+            <option value="">Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </div>
         <div className="form-group mb-3">
-        <label>Attatch image</label>
-          <input
-            type="file"
-            name="image"
-            className="form-control"
-            accept=".jpg, .jpeg, .png"
-            onChange={handleFileChange}
-          />
+          <label>Attach Image</label>
+          <input type="file" name="image" className="form-control" accept=".jpg, .jpeg, .png" onChange={handleFileChange} />
         </div>
- {/* ✅ Attach Document Button */}
- <div className="form-group mb-3">
+        <div className="form-group mb-3">
           <label>Attach Doc (PDF, Word)</label>
-          <input
-            type="file"
-            name="doc"
-            className="form-control"
-            accept=".pdf, .doc, .docx"
-            onChange={handleDocChange}
-          />
+          <input type="file" name="doc" className="form-control" accept=".pdf, .doc, .docx" onChange={handleDocChange} />
         </div>
-        <button type="submit" className="btn btn-primary">
-          Submit
-        </button>
+        <button type="submit" className="btn btn-primary">Submit</button>
       </form>
     </div>
   );
