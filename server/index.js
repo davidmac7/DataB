@@ -92,21 +92,21 @@ app.post("/api/create-profile", async (req, res) => {
 
 // Login
 app.post("/api/login", async (req, res) => {
-  const { name, password } = req.body;
+  const { name } = req.body;
 
   try {
       // Fetch user details including password for authentication
-      const user = await pool.query("SELECT id, name, password FROM aircraft_profiles WHERE name = $1", [name]);
+      const user = await pool.query("SELECT id, name FROM aircraft_profiles WHERE name = $1", [name]);
 
       if (user.rows.length === 0) {
           return res.status(401).json({ error: "User not found" });
       }
 
-      // Compare hashed password
-      const validPassword = bcrypt.compareSync(password, user.rows[0].password);
-      if (!validPassword) {
-          return res.status(401).json({ error: "Invalid credentials" });
-      }
+      // // Compare hashed password
+      // const validPassword = bcrypt.compareSync(password, user.rows[0].password);
+      // if (!validPassword) {
+      //     return res.status(401).json({ error: "Invalid credentials" });
+      // }
 
       // Set aircraft profile ID in session
       req.session.aircraftId = user.rows[0].id;
@@ -122,6 +122,16 @@ app.post("/api/login", async (req, res) => {
   } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/aircrafts", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id AS aircraftId, name FROM aircraft_profiles");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching aircraft profiles:", error);
+    res.status(500).send("Server error");
   }
 });
 

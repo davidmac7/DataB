@@ -26,7 +26,7 @@ function AuthForm({ setProfile, role  }) {
       } else if (mode === "login") {
         res = await axios.post("http://localhost:5000/api/login", {
           name: formData.name,
-          password: formData.password,
+          // password: formData.password,
         }, { withCredentials: true });
         console.log("Response from backend:", res.data); // Debugging step
       }
@@ -76,7 +76,7 @@ function AuthForm({ setProfile, role  }) {
                   />
                 </div>
 
-                <div className="form-group mb-3">
+                {/* <div className="form-group mb-3">
                   <input
                     type="password"
                     name="password"
@@ -85,7 +85,7 @@ function AuthForm({ setProfile, role  }) {
                     onChange={handleChange}
                     required
                   />
-                </div>
+                </div> */}
 
                 {mode === "create" && (
                   <>
