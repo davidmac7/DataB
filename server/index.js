@@ -76,13 +76,13 @@ app.use("/", signatureRoutes);
 
 // Create Profile
 app.post("/api/create-profile", async (req, res) => {
-  const { name, password, type, date } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const { name, type, date } = req.body;
+  // const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     const result = await pool.query(
-      "INSERT INTO aircraft_profiles (name, password, type, date) VALUES ($1, $2, $3, $4) RETURNING *",
-      [name, hashedPassword, type, date]
+      "INSERT INTO aircraft_profiles (name, type, date) VALUES ($1, $2, $3) RETURNING *",
+      [name, type, date]
     );
     res.json(result.rows[0]);
   } catch (err) {
