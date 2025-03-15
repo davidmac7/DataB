@@ -18,7 +18,7 @@ import { uploads } from './upload.js'; // Import the multer upload from upload.j
 dotenv.config();
 
 const app = express();
-
+const saltRounds = 10;
 
 // ✅ Initialize the PostgreSQL pool BEFORE using it
 const pool = new pg.Pool({
@@ -38,7 +38,7 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true },
+    cookie: { secure: true, httpOnly: false },
   })
 );
 
@@ -492,22 +492,9 @@ app.get("/api/aircraft-profiles", async (req, res) => {
   }
 });
 
-// Set selected aircraft in session
-app.post("/api/select-aircraft", (req, res) => {
-  const { aircraftId } = req.body;
-  if (!aircraftId) return res.status(400).json({ error: "Aircraft ID required" });
 
-  req.session.selectedAircraft = aircraftId;
-  res.json({ message: "Aircraft selected successfully", aircraftId });
-});
 
-// Get selected aircraft from session
-app.get("/api/selected-aircraft", (req, res) => {
-  if (!req.session.selectedAircraft) {
-    return res.status(404).json({ error: "No aircraft selected" });
-  }
-  res.json({ aircraftId: req.session.selectedAircraft });
-});
+
 app.get("/api/aircraft-profiles", async (req, res) => {
   try {
     const result = await pool.query("SELECT name FROM aircraft_profiles");
@@ -539,6 +526,34 @@ app.post("/getRole", async (req, res) => {
   } catch (error) {
     console.error("Error fetching role:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Create a new role (registration)
+app.post("/createRole", async (req, res) => {
+  const { idNumber, password, role } = req.body;
+
+  if (!idNumber || !password || !role) {
+    return res.status(400).json({ error: "ID number and password are required." });
+  }
+
+  try {
+    // Check if ID already exists
+    const existingUser = await pool.query("SELECT * FROM roles WHERE id_number = $1", [idNumber]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "ID number already exists." });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Insert into database
+    await pool.query("INSERT INTO roles (id_number, password, role) VALUES ($1, $2, $3)", [idNumber, hashedPassword, role]);
+
+    res.status(201).json({ message: "Account created successfully." });
+  } catch (error) {
+    console.error("Error creating account:", error);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 

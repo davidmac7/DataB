@@ -7,7 +7,7 @@ const Home = () => {
     left: 0,
     width: "100%",
     height: "100vh",
-    backgroundImage: "url('/360_F.jpg')", // Update with correct path
+    backgroundImage: "url('/Pro-Heli-Ltd.png')", // Update with correct path
     backgroundSize: "cover",
     backgroundPosition: "center",
     zIndex: -1, // Puts the image behind the content
@@ -28,6 +28,7 @@ const Home = () => {
       {/* Heading */}
       <div style={textStyle}>
         <h1 className="text-success">Welcome to Proheli!</h1>
+        <h3>Select Department from the Menu above</h3>
       </div>
     </>
   );
