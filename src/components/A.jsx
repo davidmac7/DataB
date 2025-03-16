@@ -49,7 +49,7 @@ function A({ profile }) {
         <div className="grid-container">
           {components.map((component, index) => (
             <div key={index} className="grid-item">
-              <h3>Name: {component.name}</h3>
+              <h4>Name: {component.name}</h4>
               <p>Part Number: {component.part_number}</p>
               <p>Serial Number: {component.serial_number}</p>
               <p>Comment: {component.comment}</p>

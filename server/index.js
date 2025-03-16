@@ -44,8 +44,8 @@ app.use(
 
 // Allow requests from multiple frontend ports
 const allowedOrigins = [
+  "https://192.168.48.100:3000",
   "http://localhost:3000",
-  "http://localhost:3001",
   "http://localhost:3002",
   "http://localhost:3003",
 ];

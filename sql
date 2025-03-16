@@ -98,3 +98,5 @@ CREATE TABLE signaturesz (
     technical_signature_path TEXT,
     FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE CASCADE
 );
+
+ALTER TABLE aircraft_profiles DROP COLUMN signature;
