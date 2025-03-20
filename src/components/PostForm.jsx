@@ -74,6 +74,7 @@ function PostForm({ profile, role }) {
     }
 
     const formDataToSend = new FormData();
+    formDataToSend.append("systemName", formData.systemName);
     formDataToSend.append("name", formData.name);
     formDataToSend.append("partNumber", formData.partNumber);
     formDataToSend.append("serialNumber", formData.serialNumber);
@@ -95,6 +96,7 @@ function PostForm({ profile, role }) {
       console.log("Post submitted:", res.data);
       // Optionally clear the form after submission
       setFormData({
+        systemName: "",
         name: "",
         partNumber: "",
         serialNumber: "",
@@ -113,6 +115,9 @@ function PostForm({ profile, role }) {
     <div className="container mt-5">
       <h2>Create Component Post</h2>
       <form onSubmit={handleSubmit}>
+      <div className="form-group mb-3">
+          <input type="text" name="systemName" className="form-control" placeholder="System Name" value={formData.systemName} onChange={handleChange} required />
+        </div>
         <div className="form-group mb-3">
           <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name} onChange={handleChange} required />
         </div>

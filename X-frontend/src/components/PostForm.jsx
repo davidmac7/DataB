@@ -3,14 +3,14 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap
 
 function PostForm({ profile, role }) {
-
   const [formData, setFormData] = useState({
+    systemName: "", // ✅ Added System Name
     name: "",
     partNumber: "",
     serialNumber: "",
     comment: "",
     status: "", // default status
-    category: "", // 
+    category: "", 
     image: null,
     doc: null, // ✅ Added document field
   });
@@ -31,7 +31,6 @@ function PostForm({ profile, role }) {
     setCategories(roleCategories);
   }, [role]);
 
-  // Handle changes in form input fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -40,7 +39,6 @@ function PostForm({ profile, role }) {
     }));
   };
 
-  // Handle image file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setFormData((prevData) => ({
@@ -48,9 +46,8 @@ function PostForm({ profile, role }) {
       image: file,
     }));
   };
-  
-   // ✅ Handle document file upload (only .doc, .docx, .pdf)
-   const handleDocChange = (e) => {
+
+  const handleDocChange = (e) => {
     const file = e.target.files[0];
     if (file && !["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
       alert("Only .doc, .docx, and .pdf files are allowed.");
@@ -62,10 +59,6 @@ function PostForm({ profile, role }) {
     }));
   };
 
-  useEffect(() => {
-    console.log("Received Profile in PostForm:", profile);
-  }, [profile]);
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!profile || !profile.aircraftId) {
@@ -74,27 +67,25 @@ function PostForm({ profile, role }) {
     }
 
     const formDataToSend = new FormData();
+    formDataToSend.append("systemName", formData.systemName); // ✅ Include System Name
     formDataToSend.append("name", formData.name);
     formDataToSend.append("partNumber", formData.partNumber);
     formDataToSend.append("serialNumber", formData.serialNumber);
     formDataToSend.append("comment", formData.comment);
     formDataToSend.append("status", formData.status);
-    formDataToSend.append("category", formData.category); // Send category to database
-    formDataToSend.append("image", formData.image); // Attach image file
-    formDataToSend.append("doc", formData.doc); // ✅ Attach document file
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("image", formData.image);
+    formDataToSend.append("doc", formData.doc);
     formDataToSend.append("aircraftId", profile.aircraftId);
 
     try {
-      // Send form data to the backend (API route for submitting post)
       const res = await axios.post("http://localhost:5000/api/post-component", formDataToSend, {
-        withCredentials: true,  // Ensure cookies (session) are sent with the request
-        headers: {
-          "Content-Type": "multipart/form-data", // Important for file uploads
-        },
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
       });
       console.log("Post submitted:", res.data);
-      // Optionally clear the form after submission
       setFormData({
+        systemName: "", // ✅ Clear System Name after submit
         name: "",
         partNumber: "",
         serialNumber: "",
@@ -102,7 +93,7 @@ function PostForm({ profile, role }) {
         status: "",
         category: "",
         image: null,
-        doc: null, // ✅ Clear document field
+        doc: null,
       });
     } catch (error) {
       console.error("Error submitting post:", error.response?.data || error.message);
@@ -113,6 +104,19 @@ function PostForm({ profile, role }) {
     <div className="container mt-5">
       <h2>Create Component Post</h2>
       <form onSubmit={handleSubmit}>
+        {/* ✅ System Name Field */}
+        <div className="form-group mb-3">
+          <input
+            type="text"
+            name="systemName"
+            className="form-control"
+            placeholder="System Name"
+            value={formData.systemName}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
         <div className="form-group mb-3">
           <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name} onChange={handleChange} required />
         </div>
