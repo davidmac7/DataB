@@ -6,6 +6,7 @@
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "cra-template": "1.2.0",
+    "cross-env": "^7.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.5",
@@ -14,7 +15,7 @@
     "web-vitals": "^4.2.4"
   },
   "scripts": {
-    "start": "set PORT=3000 && react-scripts start",
+    "start": "cross-env HTTPS=true SSL_CRT_FILE=aviation-tool.local.pem SSL_KEY_FILE=aviation-tool.local-key.pem HOST=aviation-tool.local PORT=3000 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
